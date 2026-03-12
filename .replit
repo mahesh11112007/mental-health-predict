@@ -45,3 +45,8 @@ waitForPort = 5000
 [agent]
 stack = "MOCKUP_JS"
 mockupState = "MOCKUP"
+
+[userenv]
+
+[userenv.shared]
+VITE_HUME_API_KEY = "AAvR5pNGjSGF8hHtOD7AbBaye665lVxJZYZgrqWdWV1mq38g"
