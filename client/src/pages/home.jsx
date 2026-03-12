@@ -64,11 +64,14 @@ export default function Home() {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link href="#how-it-works">
-              <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg w-full sm:w-auto bg-white/50 backdrop-blur border-border/50">
-                View Methodology
-              </Button>
-            </Link>
+            <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg w-full sm:w-auto bg-white/50 backdrop-blur border-border/50" onClick={() => {
+              const el = document.getElementById("how-it-works");
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}>
+              View Methodology
+            </Button>
           </div>
         </motion.div>
 
@@ -83,7 +86,7 @@ export default function Home() {
         duration: 0.6,
         delay: 0.2,
         ease: "easeOut"
-      }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-32 max-w-5xl mx-auto w-full">
+      }} id="how-it-works" className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-32 max-w-5xl mx-auto w-full">
           <div className="p-8 rounded-3xl bg-card/80 backdrop-blur border border-white/40 shadow-xl shadow-black/5 text-left flex flex-col gap-4 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10 group-hover:bg-primary/10 transition-colors" />
             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-border/50">

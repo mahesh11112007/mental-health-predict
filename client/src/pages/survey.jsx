@@ -29,10 +29,11 @@ export default function Survey() {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
   
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
+  const [scanState, setScanState] = useState("idle");
   const [scanComplete, setScanComplete] = useState(false);
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [capturedImage, setCapturedImage] = useState(null);
 
   const form = useForm({
     resolver: zodResolver(surveySchema),
@@ -48,6 +49,9 @@ export default function Survey() {
   });
 
   const onSubmit = data => {
+    if (step === 3 && !scanComplete) {
+      return;
+    }
     setIsSubmitting(true);
     // Simulate ML processing time
     setTimeout(() => {
@@ -69,9 +73,8 @@ export default function Survey() {
     }
   };
 
-  const startScan = async () => {
-    setIsScanning(true);
-    setScanProgress(0);
+  const startCamera = async () => {
+    setScanState("camera");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
@@ -79,7 +82,36 @@ export default function Survey() {
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
-      // Even if camera fails, we'll let the progress bar run as a fallback mockup
+      // Fallback if camera fails
+      setTimeout(() => {
+        setScanState("analyzing");
+        setTimeout(() => {
+          setScanState("complete");
+          setScanComplete(true);
+        }, 2000);
+      }, 1000);
+    }
+  };
+
+  const captureFace = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      setCapturedImage(canvas.toDataURL('image/jpeg'));
+      
+      stopCamera();
+      setScanState("analyzing");
+      
+      setTimeout(() => {
+        setScanState("complete");
+        setScanComplete(true);
+      }, 2500);
     }
   };
 
@@ -88,20 +120,6 @@ export default function Survey() {
       videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     }
   };
-
-  useEffect(() => {
-    if (isScanning && scanProgress < 100) {
-      const timer = setTimeout(() => {
-        setScanProgress(prev => Math.min(prev + 10, 100));
-      }, 300);
-      return () => clearTimeout(timer);
-    } else if (scanProgress === 100) {
-      setTimeout(() => {
-        setScanComplete(true);
-        stopCamera();
-      }, 500);
-    }
-  }, [isScanning, scanProgress]);
 
   useEffect(() => {
     return () => {
@@ -312,11 +330,13 @@ export default function Survey() {
                     </p>
                   </div>
 
-                  {!isScanning && !scanComplete ? (
-                    <Button type="button" size="lg" variant="outline" className="rounded-full h-14 px-8 border-primary/20 text-primary hover:bg-primary/5 font-bold" onClick={startScan}>
+                  {scanState === "idle" && (
+                    <Button type="button" size="lg" variant="outline" className="rounded-full h-14 px-8 border-primary/20 text-primary hover:bg-primary/5 font-bold" onClick={startCamera}>
                       Start Privacy-Safe Scan
                     </Button>
-                  ) : isScanning && !scanComplete ? (
+                  )}
+
+                  {scanState === "camera" && (
                     <div className="w-full max-w-sm space-y-4">
                       <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/50 mb-4 shadow-inner">
                         <video 
@@ -329,24 +349,43 @@ export default function Survey() {
                         <div className="absolute inset-0 border-2 border-primary/30 rounded-xl pointer-events-none" />
                         <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/80 animate-[scan_2s_ease-in-out_infinite]" style={{boxShadow: '0 0 8px 2px rgba(var(--primary), 0.5)'}} />
                       </div>
-                      <div className="flex justify-between text-sm font-bold text-muted-foreground">
-                        <span>Analyzing Expressions...</span>
-                        <span>{scanProgress}%</span>
-                      </div>
-                      <Progress value={scanProgress} className="h-3 bg-muted" />
-                      <p className="text-xs text-center text-muted-foreground mt-4 animate-pulse">
-                        Please look directly at the camera
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="w-full max-w-sm p-6 bg-green-500/10 border border-green-500/20 rounded-2xl flex flex-col items-center space-y-4">
-                      <CheckCircle2 className="w-12 h-12 text-green-500" />
-                      <div className="text-center">
-                        <p className="font-bold text-green-600 dark:text-green-400">Analysis Complete</p>
-                        <p className="text-xs text-muted-foreground mt-1">Data securely processed locally</p>
-                      </div>
+                      <Button type="button" size="lg" className="w-full rounded-xl font-bold shadow-md" onClick={captureFace}>
+                        Capture Face
+                      </Button>
                     </div>
                   )}
+
+                  {(scanState === "analyzing" || scanState === "complete") && (
+                    <div className="w-full max-w-sm space-y-4">
+                      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/50 shadow-inner">
+                        {capturedImage && (
+                          <img 
+                            src={capturedImage} 
+                            alt="Captured face" 
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        {scanState === "analyzing" && (
+                          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+                            <Loader2 className="w-10 h-10 animate-spin text-primary mb-3" />
+                            <span className="font-bold text-foreground">Analyzing Expressions...</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {scanState === "complete" && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center gap-3">
+                          <CheckCircle2 className="w-6 h-6 text-green-500" />
+                          <div className="flex flex-col text-left">
+                            <span className="font-bold text-green-600 dark:text-green-400 text-sm">Analysis Complete</span>
+                            <span className="text-xs text-muted-foreground">Data securely processed locally</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+
+                  <canvas ref={canvasRef} className="hidden" />
 
                 </motion.div>}
               </AnimatePresence>
@@ -364,7 +403,7 @@ export default function Survey() {
                 
                 {step < 3 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} data-testid="button-next">
                     Continue <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting} data-testid="button-submit">
+                  </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting || scanState === "camera" || scanState === "analyzing"} data-testid="button-submit">
                     {isSubmitting ? <>
                         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                         Generating Results...
