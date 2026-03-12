@@ -19,9 +19,9 @@ const surveySchema = z.object({
   gender: z.string().min(1, "Please select your gender"),
   familyHistory: z.string().min(1, "Please answer this question"),
   workInterfere: z.string().min(1, "Please answer this question"),
-  remoteWork: z.string().min(1, "Please answer this question"),
-  techCompany: z.string().min(1, "Please answer this question"),
-  benefits: z.string().min(1, "Please answer this question"),
+  remoteWork: z.string().optional(),
+  techCompany: z.string().optional(),
+  benefits: z.string().optional(),
   moodFrequency: z.string().min(1, "Please answer this question"),
   panicAttacks: z.string().min(1, "Please answer this question"),
   sleepQuality: z.string().min(1, "Please answer this question")
@@ -76,15 +76,12 @@ export default function Survey() {
   const nextStep = async () => {
     const fieldsToValidate = 
       step === 1 ? ["age", "gender", "familyHistory", "workInterfere"] : 
-      step === 2 ? ["remoteWork", "techCompany", "benefits"] : 
       ["moodFrequency", "panicAttacks", "sleepQuality"];
       
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
       // Clear errors for the next step
       if (step === 1) {
-        form.clearErrors(["remoteWork", "techCompany", "benefits"]);
-      } else if (step === 2) {
         form.clearErrors(["moodFrequency", "panicAttacks", "sleepQuality"]);
       }
       setStep(step + 1);

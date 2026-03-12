@@ -7,14 +7,18 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Survey from "@/pages/survey";
 import Result from "@/pages/result";
+import Auth from "@/pages/auth";
+
 function Router() {
   return <Switch>
       <Route path="/" component={Home} />
       <Route path="/survey" component={Survey} />
       <Route path="/result" component={Result} />
+      <Route path="/auth" component={Auth} />
       <Route component={NotFound} />
     </Switch>;
 }
+
 function App() {
   return <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -23,4 +27,5 @@ function App() {
       </TooltipProvider>
     </QueryClientProvider>;
 }
+
 export default App;

@@ -197,14 +197,22 @@ export default function Result() {
                         <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0" />
                         Please consult a healthcare professional or licensed therapist for a comprehensive evaluation and personalized treatment plan.
                       </li>
-                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
-                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                        Review your employer's HR portal for available mental health benefits or Employee Assistance Programs (EAPs) to help cover costs.
-                      </li>
+                      {(surveyData?.techCompany === "Yes" || surveyData?.benefits === "Yes") && (
+                        <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                          Review your employer's HR portal for available mental health benefits or Employee Assistance Programs (EAPs) to help cover costs.
+                        </li>
+                      )}
                       <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
                         <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
                         Reach out to a trusted friend, family member, or support group to share how you're feeling and seek immediate support.
                       </li>
+                      {surveyData?.sleepQuality === "Very Poor" && (
+                        <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                          Your sleep quality is very poor. Consider consulting a doctor about potential sleep aids or therapies, as poor sleep severely impacts mental health.
+                        </li>
+                      )}
                     </>
                   )}
                   {prediction.risk === "Moderate" && (
@@ -213,10 +221,12 @@ export default function Result() {
                         <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 shrink-0" />
                         Consider speaking with a counselor or therapist to address current stressors before they escalate.
                       </li>
-                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
-                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                        Evaluate your work-life balance and discuss potential adjustments with your manager if work is interfering with your wellbeing.
-                      </li>
+                      {(surveyData?.workInterfere === "Often" || surveyData?.workInterfere === "Sometimes") && (
+                        <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                          Evaluate your work-life balance and discuss potential adjustments with your manager if work is interfering with your wellbeing.
+                        </li>
+                      )}
                       <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
                         <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
                         Explore self-care strategies, such as mindfulness, regular exercise, and ensuring adequate sleep to help manage stress.
@@ -233,10 +243,12 @@ export default function Result() {
                         <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
                         Stay proactive by monitoring your stress levels and making adjustments if you notice changes in your mood or energy.
                       </li>
-                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
-                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                        Familiarize yourself with your company's mental health resources so you know where to turn if your situation changes in the future.
-                      </li>
+                      {(surveyData?.techCompany === "Yes" || surveyData?.benefits === "Yes") && (
+                        <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                          Familiarize yourself with your company's mental health resources so you know where to turn if your situation changes in the future.
+                        </li>
+                      )}
                     </>
                   )}
                 </ul>
@@ -244,10 +256,15 @@ export default function Result() {
             </Card>
           </div>
 
-          <div className="flex justify-center pt-8">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-8">
+            <Link href="/auth">
+              <Button size="lg" className="rounded-full h-14 px-8 font-bold gap-2 shadow-lg shadow-primary/20 text-lg w-full sm:w-auto" data-testid="button-save-results">
+                Create Account to Save Results
+              </Button>
+            </Link>
             <Link href="/survey">
-              <Button variant="outline" size="lg" className="rounded-full h-14 px-8 font-bold gap-2 bg-white/50 backdrop-blur shadow-sm hover:bg-white" onClick={() => sessionStorage.removeItem("surveyResult")} data-testid="button-retake">
-                <RefreshCw className="w-5 h-5" /> Retake Assessment
+              <Button variant="outline" size="lg" className="rounded-full h-14 px-8 font-bold gap-2 bg-white/50 backdrop-blur shadow-sm hover:bg-white w-full sm:w-auto" onClick={() => sessionStorage.removeItem("surveyResult")} data-testid="button-retake">
+                <RefreshCw className="w-5 h-5" /> Retake
               </Button>
             </Link>
           </div>
