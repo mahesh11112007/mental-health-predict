@@ -64,9 +64,11 @@ export default function Home() {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg w-full sm:w-auto bg-white/50 backdrop-blur border-border/50">
-              View Methodology
-            </Button>
+            <Link href="#how-it-works">
+              <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg w-full sm:w-auto bg-white/50 backdrop-blur border-border/50">
+                View Methodology
+              </Button>
+            </Link>
           </div>
         </motion.div>
 
