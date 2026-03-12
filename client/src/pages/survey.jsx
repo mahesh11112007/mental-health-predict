@@ -123,6 +123,8 @@ export default function Survey() {
       stopCamera();
       setScanState("analyzing");
       
+      /*
+      // Commenting out Hume AI API check
       try {
         const client = new HumeClient({
           apiKey: "YOUR_API_KEY" || import.meta.env.VITE_HUME_API_KEY
@@ -147,6 +149,13 @@ export default function Survey() {
           setScanComplete(true);
         }, 1500);
       }
+      */
+
+      // Fallback behavior when API is commented out
+      setTimeout(() => {
+        setScanState("complete");
+        setScanComplete(true);
+      }, 1500);
     }
   };
 
