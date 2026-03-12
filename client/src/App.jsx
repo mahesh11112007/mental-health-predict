@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import Survey from "@/pages/survey";
 import Result from "@/pages/result";
 import Auth from "@/pages/auth";
+import Dashboard from "@/pages/dashboard";
 
 function Router() {
   return <Switch>
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/survey" component={Survey} />
       <Route path="/result" component={Result} />
       <Route path="/auth" component={Auth} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>;
 }

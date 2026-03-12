@@ -21,11 +21,18 @@ export default function Home() {
           <a href="#about" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Platform</a>
           <a href="#how-it-works" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Science</a>
         </nav>
-        <Link href="/survey">
-          <Button variant="default" className="rounded-full px-6 font-semibold shadow-md shadow-primary/20" data-testid="button-nav-start">
-            Try the Model
-          </Button>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/auth">
+            <Button variant="ghost" className="hidden md:flex font-semibold text-muted-foreground hover:text-foreground">
+              Sign In
+            </Button>
+          </Link>
+          <Link href="/survey">
+            <Button variant="default" className="rounded-full px-6 font-semibold shadow-md shadow-primary/20" data-testid="button-nav-start">
+              Try the Model
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* Hero Section */}

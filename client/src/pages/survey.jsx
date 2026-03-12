@@ -14,16 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 
 const surveySchema = z.object({
-  age: z.string().min(1, "Please enter your age"),
-  gender: z.string().min(1, "Please select your gender"),
-  familyHistory: z.string().min(1, "Please answer this question"),
-  workInterfere: z.string().min(1, "Please answer this question"),
+  age: z.string().optional(),
+  gender: z.string().optional(),
+  familyHistory: z.string().optional(),
+  workInterfere: z.string().optional(),
   remoteWork: z.string().optional(),
   techCompany: z.string().optional(),
   benefits: z.string().optional(),
-  moodFrequency: z.string().min(1, "Please answer this question"),
-  panicAttacks: z.string().min(1, "Please answer this question"),
-  sleepQuality: z.string().min(1, "Please answer this question")
+  moodFrequency: z.string().optional(),
+  panicAttacks: z.string().optional(),
+  sleepQuality: z.string().optional()
 });
 
 export default function Survey() {
@@ -55,12 +55,17 @@ export default function Survey() {
   });
 
   const onSubmit = data => {
-    /* 
-    // Step 3 logic commented out
-    if (step === 3 && !scanComplete) {
-      return;
-    }
-    */
+    // Validate step 2 fields before submitting
+    let hasError = false;
+    ["moodFrequency", "panicAttacks", "sleepQuality"].forEach(f => {
+      if (!data[f]) {
+        form.setError(f, { type: "manual", message: "Please answer this question" });
+        hasError = true;
+      }
+    });
+    
+    if (hasError) return;
+
     setIsSubmitting(true);
     // Simulate ML processing time
     setTimeout(() => {
@@ -72,17 +77,23 @@ export default function Survey() {
     }, 2500);
   };
 
-  const nextStep = async () => {
-    const fieldsToValidate = 
-      step === 1 ? ["age", "gender", "familyHistory", "workInterfere"] : 
-      ["moodFrequency", "panicAttacks", "sleepQuality"];
-      
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-      // Clear errors for the next step
-      if (step === 1) {
-        form.clearErrors(["moodFrequency", "panicAttacks", "sleepQuality"]);
-      }
+  const nextStep = () => {
+    const values = form.getValues();
+    let hasError = false;
+    
+    if (step === 1) {
+      const requiredFields = ["age", "gender", "familyHistory", "workInterfere"];
+      requiredFields.forEach(f => {
+        if (!values[f]) {
+          form.setError(f, { type: "manual", message: "Please answer this question" });
+          hasError = true;
+        } else {
+          form.clearErrors(f);
+        }
+      });
+    }
+    
+    if (!hasError) {
       setStep(step + 1);
     }
   };
@@ -169,6 +180,13 @@ export default function Survey() {
       stopCamera();
     };
   }, []);
+
+  useEffect(() => {
+    if (step === 2) {
+      // Ensure errors don't show up immediately when moving to step 2
+      form.clearErrors(["moodFrequency", "panicAttacks", "sleepQuality", "remoteWork", "techCompany", "benefits"]);
+    }
+  }, [step, form]);
 
   return <div className="min-h-screen bg-muted/30 py-12 px-4 flex flex-col items-center relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />

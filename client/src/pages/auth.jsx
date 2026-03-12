@@ -19,8 +19,13 @@ export default function Auth() {
     // Simulate network request
     setTimeout(() => {
       setIsLoading(false);
-      // Let's redirect to a mock dashboard or home page
-      setLocation("/");
+      // Let's redirect to a mock dashboard
+      // Add fake user to session storage
+      sessionStorage.setItem("user", JSON.stringify({ 
+        name: isLogin ? "Alex Doe" : e.target.name?.value,
+        email: e.target.email.value 
+      }));
+      setLocation("/dashboard");
     }, 1500);
   };
 
