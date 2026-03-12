@@ -31,7 +31,7 @@ export default function Survey() {
   const [, setLocation] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 2; // Temporarily changed from 3
   
   const [scanState, setScanState] = useState("idle");
   const [scanComplete, setScanComplete] = useState(false);
@@ -56,15 +56,18 @@ export default function Survey() {
   });
 
   const onSubmit = data => {
+    /* 
+    // Step 3 logic commented out
     if (step === 3 && !scanComplete) {
       return;
     }
+    */
     setIsSubmitting(true);
     // Simulate ML processing time
     setTimeout(() => {
       sessionStorage.setItem("surveyResult", JSON.stringify({
         ...data,
-        faceScanned: scanComplete
+        faceScanned: false // Force to false since step 3 is skipped
       }));
       setLocation("/result");
     }, 2500);
@@ -406,6 +409,7 @@ export default function Survey() {
                       </div>
                     </div>
                   </motion.div>}
+                {/* Step 3 commented out
                 {step === 3 && <motion.div key="step3" initial={{
                 opacity: 0,
                 x: 20
@@ -488,9 +492,11 @@ export default function Survey() {
                   <canvas ref={canvasRef} className="hidden" />
 
                 </motion.div>}
+                */}
               </AnimatePresence>
 
               <div className="flex justify-between items-center pt-8 mt-8 border-t border-border/50">
+                {/* Step 3 logic commented out
                 {step === 3 ? (
                   <Button type="button" variant="ghost" className="font-bold text-muted-foreground" onClick={() => {
                     form.handleSubmit(onSubmit)();
@@ -500,10 +506,12 @@ export default function Survey() {
                 ) : (
                   <div /> // Empty div for spacing
                 )}
+                */}
+                <div />
                 
-                {step < 3 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} data-testid="button-next">
+                {step < 2 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} data-testid="button-next">
                     Continue <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting || scanState === "camera" || scanState === "analyzing"} data-testid="button-submit">
+                  </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting} data-testid="button-submit">
                     {isSubmitting ? <>
                         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                         Generating Results...
