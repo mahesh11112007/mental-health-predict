@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,7 @@ export default function Survey() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanComplete, setScanComplete] = useState(false);
+  const videoRef = useRef(null);
 
   const form = useForm({
     resolver: zodResolver(surveySchema),
@@ -68,21 +69,45 @@ export default function Survey() {
     }
   };
 
-  const startScan = () => {
+  const startScan = async () => {
     setIsScanning(true);
     setScanProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      // Even if camera fails, we'll let the progress bar run as a fallback mockup
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+    }
   };
 
   useEffect(() => {
     if (isScanning && scanProgress < 100) {
       const timer = setTimeout(() => {
         setScanProgress(prev => Math.min(prev + 10, 100));
-      }, 200);
+      }, 300);
       return () => clearTimeout(timer);
     } else if (scanProgress === 100) {
-      setTimeout(() => setScanComplete(true), 500);
+      setTimeout(() => {
+        setScanComplete(true);
+        stopCamera();
+      }, 500);
     }
   }, [isScanning, scanProgress]);
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   return <div className="min-h-screen bg-muted/30 py-12 px-4 flex flex-col items-center relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
@@ -293,6 +318,17 @@ export default function Survey() {
                     </Button>
                   ) : isScanning && !scanComplete ? (
                     <div className="w-full max-w-sm space-y-4">
+                      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/50 mb-4 shadow-inner">
+                        <video 
+                          ref={videoRef} 
+                          autoPlay 
+                          playsInline 
+                          muted 
+                          className="w-full h-full object-cover scale-x-[-1]"
+                        />
+                        <div className="absolute inset-0 border-2 border-primary/30 rounded-xl pointer-events-none" />
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/80 animate-[scan_2s_ease-in-out_infinite]" style={{boxShadow: '0 0 8px 2px rgba(var(--primary), 0.5)'}} />
+                      </div>
                       <div className="flex justify-between text-sm font-bold text-muted-foreground">
                         <span>Analyzing Expressions...</span>
                         <span>{scanProgress}%</span>
