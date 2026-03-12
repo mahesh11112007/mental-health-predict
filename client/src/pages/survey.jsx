@@ -21,7 +21,10 @@ const surveySchema = z.object({
   workInterfere: z.string().min(1, "Please answer this question"),
   remoteWork: z.string().min(1, "Please answer this question"),
   techCompany: z.string().min(1, "Please answer this question"),
-  benefits: z.string().min(1, "Please answer this question")
+  benefits: z.string().min(1, "Please answer this question"),
+  moodFrequency: z.string().min(1, "Please answer this question"),
+  panicAttacks: z.string().min(1, "Please answer this question"),
+  sleepQuality: z.string().min(1, "Please answer this question")
 });
 
 export default function Survey() {
@@ -45,7 +48,10 @@ export default function Survey() {
       workInterfere: "",
       remoteWork: "",
       techCompany: "",
-      benefits: ""
+      benefits: "",
+      moodFrequency: "",
+      panicAttacks: "",
+      sleepQuality: ""
     }
   });
 
@@ -65,11 +71,19 @@ export default function Survey() {
   };
 
   const nextStep = async () => {
-    const fieldsToValidate = step === 1 ? ["age", "gender", "familyHistory", "workInterfere"] : ["remoteWork", "techCompany", "benefits"];
+    const fieldsToValidate = 
+      step === 1 ? ["age", "gender", "familyHistory", "workInterfere"] : 
+      step === 2 ? ["remoteWork", "techCompany", "benefits"] : 
+      ["moodFrequency", "panicAttacks", "sleepQuality"];
+      
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
-      // Clear errors so step 2 fields don't show up red immediately
-      form.clearErrors(["remoteWork", "techCompany", "benefits"]);
+      // Clear errors for the next step
+      if (step === 1) {
+        form.clearErrors(["remoteWork", "techCompany", "benefits"]);
+      } else if (step === 2) {
+        form.clearErrors(["moodFrequency", "panicAttacks", "sleepQuality"]);
+      }
       setStep(step + 1);
     }
   };
@@ -111,7 +125,7 @@ export default function Survey() {
       
       try {
         const client = new HumeClient({
-          apiKey: "YOUR_API_KEY" || process.env.VITE_HUME_API_KEY
+          apiKey: "YOUR_API_KEY" || import.meta.env.VITE_HUME_API_KEY
         });
 
         const response = await client.expressionMeasurement.batch.start({
@@ -276,56 +290,112 @@ export default function Survey() {
               }} transition={{
                 duration: 0.3
               }} className="space-y-8">
-                    <FormField control={form.control} name="remoteWork" render={({
+                    <FormField control={form.control} name="moodFrequency" render={({
                   field
                 }) => <FormItem className="space-y-3">
-                          <FormLabel className="text-base font-bold">Do you work remotely (outside of an office) at least 50% of the time?</FormLabel>
+                          <FormLabel className="text-base font-bold">In the past two weeks, how often have you felt down, depressed, or hopeless?</FormLabel>
                           <FormControl>
-                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-3">
-                              {["Yes", "No"].map(option => <FormItem key={option} className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border-2 border-transparent bg-background hover:bg-muted/50 cursor-pointer transition-all shadow-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              {["Not at all", "Several days", "More than half the days", "Nearly every day"].map(option => <FormItem key={option} className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border-2 border-transparent bg-background hover:bg-muted/50 cursor-pointer transition-all shadow-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                                   <FormControl>
-                                    <RadioGroupItem value={option} data-testid={`radio-remote-${option}`} className="w-5 h-5" />
+                                    <RadioGroupItem value={option} data-testid={`radio-mood-${option}`} className="w-5 h-5" />
                                   </FormControl>
-                                  <FormLabel className="font-semibold cursor-pointer w-full text-base m-0">{option}</FormLabel>
+                                  <FormLabel className="font-semibold cursor-pointer w-full text-sm m-0 leading-tight">{option}</FormLabel>
                                 </FormItem>)}
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
                         </FormItem>} />
 
-                    <FormField control={form.control} name="techCompany" render={({
+                    <FormField control={form.control} name="panicAttacks" render={({
                   field
                 }) => <FormItem className="space-y-3">
-                          <FormLabel className="text-base font-bold">Is your employer primarily a tech company or IT role?</FormLabel>
+                          <FormLabel className="text-base font-bold">Have you experienced sudden periods of intense fear or panic?</FormLabel>
                           <FormControl>
                             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-3">
-                              {["Yes", "No"].map(option => <FormItem key={option} className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border-2 border-transparent bg-background hover:bg-muted/50 cursor-pointer transition-all shadow-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                              {["Yes, frequently", "Yes, occasionally", "Rarely", "Never"].map(option => <FormItem key={option} className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border-2 border-transparent bg-background hover:bg-muted/50 cursor-pointer transition-all shadow-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                                   <FormControl>
-                                    <RadioGroupItem value={option} data-testid={`radio-tech-${option}`} className="w-5 h-5" />
+                                    <RadioGroupItem value={option} data-testid={`radio-panic-${option}`} className="w-5 h-5" />
                                   </FormControl>
-                                  <FormLabel className="font-semibold cursor-pointer w-full text-base m-0">{option}</FormLabel>
+                                  <FormLabel className="font-semibold cursor-pointer w-full text-sm m-0 leading-tight">{option}</FormLabel>
                                 </FormItem>)}
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
                         </FormItem>} />
 
-                    <FormField control={form.control} name="benefits" render={({
+                    <FormField control={form.control} name="sleepQuality" render={({
                   field
                 }) => <FormItem className="space-y-3">
-                          <FormLabel className="text-base font-bold">Does your employer provide mental health benefits?</FormLabel>
+                          <FormLabel className="text-base font-bold">How would you rate your sleep quality recently?</FormLabel>
                           <FormControl>
-                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                              {["Yes", "No", "Don't know"].map(option => <FormItem key={option} className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border-2 border-transparent bg-background hover:bg-muted/50 cursor-pointer transition-all shadow-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              {["Very Good", "Good", "Poor", "Very Poor"].map(option => <FormItem key={option} className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border-2 border-transparent bg-background hover:bg-muted/50 cursor-pointer transition-all shadow-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                                   <FormControl>
-                                    <RadioGroupItem value={option} data-testid={`radio-benefits-${option}`} className="w-5 h-5" />
+                                    <RadioGroupItem value={option} data-testid={`radio-sleep-${option}`} className="w-5 h-5" />
                                   </FormControl>
-                                  <FormLabel className="font-semibold cursor-pointer w-full text-base m-0">{option}</FormLabel>
+                                  <FormLabel className="font-semibold cursor-pointer w-full text-sm m-0 leading-tight">{option}</FormLabel>
                                 </FormItem>)}
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
                         </FormItem>} />
+
+                    <div className="pt-6 border-t border-border/50">
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Work Environment (Optional)</h4>
+                      <div className="space-y-6">
+                        <FormField control={form.control} name="remoteWork" render={({
+                      field
+                    }) => <FormItem className="space-y-3">
+                              <FormLabel className="text-base font-bold">Do you work remotely at least 50% of the time?</FormLabel>
+                              <FormControl>
+                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                  {["Yes", "No"].map(option => <FormItem key={option} className="flex items-center space-x-2">
+                                      <FormControl>
+                                        <RadioGroupItem value={option} data-testid={`radio-remote-${option}`} />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">{option}</FormLabel>
+                                    </FormItem>)}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>} />
+
+                        <FormField control={form.control} name="techCompany" render={({
+                      field
+                    }) => <FormItem className="space-y-3">
+                              <FormLabel className="text-base font-bold">Is your employer primarily a tech company?</FormLabel>
+                              <FormControl>
+                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                  {["Yes", "No"].map(option => <FormItem key={option} className="flex items-center space-x-2">
+                                      <FormControl>
+                                        <RadioGroupItem value={option} data-testid={`radio-tech-${option}`} />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">{option}</FormLabel>
+                                    </FormItem>)}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>} />
+
+                        <FormField control={form.control} name="benefits" render={({
+                      field
+                    }) => <FormItem className="space-y-3">
+                              <FormLabel className="text-base font-bold">Does your employer provide mental health benefits?</FormLabel>
+                              <FormControl>
+                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                  {["Yes", "No", "Don't know"].map(option => <FormItem key={option} className="flex items-center space-x-2">
+                                      <FormControl>
+                                        <RadioGroupItem value={option} data-testid={`radio-benefits-${option}`} />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">{option}</FormLabel>
+                                    </FormItem>)}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>} />
+                      </div>
+                    </div>
                   </motion.div>}
                 {step === 3 && <motion.div key="step3" initial={{
                 opacity: 0,
