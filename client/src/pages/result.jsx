@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 export default function Result() {
   const [, setLocation] = useLocation();
   const [prediction, setPrediction] = useState(null);
+  const [surveyData, setSurveyData] = useState(null);
+
   useEffect(() => {
     // Read session storage to see if we have mock data
     const data = sessionStorage.getItem("surveyResult");
@@ -16,17 +18,42 @@ export default function Result() {
       return;
     }
     const parsed = JSON.parse(data);
+    setSurveyData(parsed);
 
     // Simple heuristic for mock prediction
     let riskScore = 0;
-    if (parsed.familyHistory === "Yes") riskScore += 30;
-    if (parsed.workInterfere === "Often" || parsed.workInterfere === "Sometimes") riskScore += 40;
-    if (parsed.benefits === "No") riskScore += 10;
+    if (parsed.familyHistory === "Yes") riskScore += 20;
+    
+    if (parsed.workInterfere === "Often") riskScore += 25;
+    else if (parsed.workInterfere === "Sometimes") riskScore += 15;
+    
+    if (parsed.benefits === "No") riskScore += 5;
+
+    // New psychology questions
+    if (parsed.moodFrequency === "Nearly every day") riskScore += 25;
+    else if (parsed.moodFrequency === "More than half the days") riskScore += 15;
+    else if (parsed.moodFrequency === "Several days") riskScore += 5;
+
+    if (parsed.panicAttacks === "Yes, frequently") riskScore += 20;
+    else if (parsed.panicAttacks === "Yes, occasionally") riskScore += 10;
+
+    if (parsed.sleepQuality === "Very Poor") riskScore += 15;
+    else if (parsed.sleepQuality === "Poor") riskScore += 5;
+
+    // Facial expression analysis boost
+    if (parsed.faceScanned) {
+      // In a real scenario, this would use the actual Hume AI expression measurement scores
+      // (e.g. Anxiety, Sadness, Stress indicators). For the mockup, we simulate a slight increase.
+      riskScore += 10;
+    }
+
     let riskLevel = "Low";
-    if (riskScore > 60) riskLevel = "High";else if (riskScore > 30) riskLevel = "Moderate";
+    if (riskScore > 65) riskLevel = "High";
+    else if (riskScore > 35) riskLevel = "Moderate";
+    
     setPrediction({
       risk: riskLevel,
-      confidence: 75 + Math.random() * 20 // Random confidence between 75-95%
+      confidence: 82 + Math.random() * 15 // Random confidence between 82-97%
     });
   }, [setLocation]);
   if (!prediction) return null;
@@ -107,27 +134,51 @@ export default function Result() {
               <CardContent className="space-y-6">
                 <p className="text-sm font-medium text-muted-foreground">The model weighted these inputs most heavily based on your specific responses:</p>
                 <div className="space-y-5">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm font-bold">
-                      <span>Family History</span>
-                      <span className="text-muted-foreground">High Impact</span>
+                  {surveyData?.moodFrequency && surveyData.moodFrequency !== "Not at all" && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span>Mood & Emotional State</span>
+                        <span className="text-muted-foreground">High Impact</span>
+                      </div>
+                      <Progress value={85} className="h-2.5 bg-muted" />
                     </div>
-                    <Progress value={85} className="h-2.5 bg-muted" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm font-bold">
-                      <span>Work Interference</span>
-                      <span className="text-muted-foreground">High Impact</span>
+                  )}
+                  {surveyData?.panicAttacks && surveyData.panicAttacks !== "Never" && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span>Anxiety Indicators</span>
+                        <span className="text-muted-foreground">High Impact</span>
+                      </div>
+                      <Progress value={75} className="h-2.5 bg-muted" />
                     </div>
-                    <Progress value={70} className="h-2.5 bg-muted" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm font-bold">
-                      <span>Company Benefits</span>
-                      <span className="text-muted-foreground">Moderate Impact</span>
+                  )}
+                  {surveyData?.familyHistory === "Yes" && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span>Family History</span>
+                        <span className="text-muted-foreground">High Impact</span>
+                      </div>
+                      <Progress value={85} className="h-2.5 bg-muted" />
                     </div>
-                    <Progress value={45} className="h-2.5 bg-muted" />
-                  </div>
+                  )}
+                  {(surveyData?.workInterfere === "Often" || surveyData?.workInterfere === "Sometimes") && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span>Daily Interference</span>
+                        <span className="text-muted-foreground">High Impact</span>
+                      </div>
+                      <Progress value={70} className="h-2.5 bg-muted" />
+                    </div>
+                  )}
+                  {surveyData?.faceScanned && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span>Micro-Expression Analysis</span>
+                        <span className="text-muted-foreground">Moderate Impact</span>
+                      </div>
+                      <Progress value={60} className="h-2.5 bg-muted" />
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

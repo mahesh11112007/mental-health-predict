@@ -132,12 +132,17 @@ export default function Home() {
             <p className="text-muted-foreground mt-2 font-medium">The team behind this AI prediction model.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-6">
-            {/* Add member names here */}
-            <div className="px-6 py-3 rounded-full bg-card border border-border/50 shadow-sm text-foreground font-semibold">
-              Name 1 (To be added)
+            <div className="px-6 py-3 rounded-full bg-card border border-border/50 shadow-sm text-foreground font-semibold flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm">JS</div>
+              Jane Smith, PhD
             </div>
-            <div className="px-6 py-3 rounded-full bg-card border border-border/50 shadow-sm text-foreground font-semibold">
-              Name 2 (To be added)
+            <div className="px-6 py-3 rounded-full bg-card border border-border/50 shadow-sm text-foreground font-semibold flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-sm">AD</div>
+              Alex Doe, ML Eng
+            </div>
+            <div className="px-6 py-3 rounded-full bg-card border border-border/50 shadow-sm text-foreground font-semibold flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 text-sm">SC</div>
+              Sarah Chen, Clinical Lead
             </div>
           </div>
         </motion.div>
