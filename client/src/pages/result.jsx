@@ -140,18 +140,54 @@ export default function Result() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-4">
-                  <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                    Review your employer's HR portal for available mental health benefits or Employee Assistance Programs (EAPs).
-                  </li>
-                  <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                    Consider reaching out to a licensed therapist or counselor for a formal clinical evaluation.
-                  </li>
-                  <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
-                    Maintain open communication with your supervisor about work-life balance if it feels safe.
-                  </li>
+                  {prediction.risk === "High" && (
+                    <>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-red-500/10 p-4 rounded-2xl border border-red-500/20">
+                        <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0" />
+                        Please consult a healthcare professional or licensed therapist for a comprehensive evaluation and personalized treatment plan.
+                      </li>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Review your employer's HR portal for available mental health benefits or Employee Assistance Programs (EAPs) to help cover costs.
+                      </li>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Reach out to a trusted friend, family member, or support group to share how you're feeling and seek immediate support.
+                      </li>
+                    </>
+                  )}
+                  {prediction.risk === "Moderate" && (
+                    <>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 shrink-0" />
+                        Consider speaking with a counselor or therapist to address current stressors before they escalate.
+                      </li>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Evaluate your work-life balance and discuss potential adjustments with your manager if work is interfering with your wellbeing.
+                      </li>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Explore self-care strategies, such as mindfulness, regular exercise, and ensuring adequate sleep to help manage stress.
+                      </li>
+                    </>
+                  )}
+                  {prediction.risk === "Low" && (
+                    <>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-primary/10 p-4 rounded-2xl border border-primary/20">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Continue your current self-care routines and healthy habits, as they appear to be supporting your well-being.
+                      </li>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Stay proactive by monitoring your stress levels and making adjustments if you notice changes in your mood or energy.
+                      </li>
+                      <li className="flex gap-4 text-base font-medium text-foreground bg-muted/30 p-4 rounded-2xl">
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                        Familiarize yourself with your company's mental health resources so you know where to turn if your situation changes in the future.
+                      </li>
+                    </>
+                  )}
                 </ul>
               </CardContent>
             </Card>

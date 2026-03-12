@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, Brain } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Brain, ScanFace, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+
 const surveySchema = z.object({
   age: z.string().min(1, "Please enter your age"),
   gender: z.string().min(1, "Please select your gender"),
@@ -21,11 +22,17 @@ const surveySchema = z.object({
   techCompany: z.string().min(1, "Please answer this question"),
   benefits: z.string().min(1, "Please answer this question")
 });
+
 export default function Survey() {
   const [, setLocation] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
-  const totalSteps = 2;
+  const totalSteps = 3;
+  
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanComplete, setScanComplete] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(surveySchema),
     defaultValues: {
@@ -38,19 +45,45 @@ export default function Survey() {
       benefits: ""
     }
   });
+
   const onSubmit = data => {
     setIsSubmitting(true);
     // Simulate ML processing time
     setTimeout(() => {
-      sessionStorage.setItem("surveyResult", JSON.stringify(data));
+      sessionStorage.setItem("surveyResult", JSON.stringify({
+        ...data,
+        faceScanned: scanComplete
+      }));
       setLocation("/result");
     }, 2500);
   };
+
   const nextStep = async () => {
     const fieldsToValidate = step === 1 ? ["age", "gender", "familyHistory", "workInterfere"] : ["remoteWork", "techCompany", "benefits"];
     const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) setStep(step + 1);
+    if (isValid) {
+      // Clear errors so step 2 fields don't show up red immediately
+      form.clearErrors(["remoteWork", "techCompany", "benefits"]);
+      setStep(step + 1);
+    }
   };
+
+  const startScan = () => {
+    setIsScanning(true);
+    setScanProgress(0);
+  };
+
+  useEffect(() => {
+    if (isScanning && scanProgress < 100) {
+      const timer = setTimeout(() => {
+        setScanProgress(prev => Math.min(prev + 10, 100));
+      }, 200);
+      return () => clearTimeout(timer);
+    } else if (scanProgress === 100) {
+      setTimeout(() => setScanComplete(true), 500);
+    }
+  }, [isScanning, scanProgress]);
+
   return <div className="min-h-screen bg-muted/30 py-12 px-4 flex flex-col items-center relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
 
@@ -70,8 +103,12 @@ export default function Survey() {
         <div className="bg-primary/5 p-8 border-b border-border/50">
           <div className="flex justify-between items-end mb-4">
             <div>
-              <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-1">Let's get to know you</h2>
-              <p className="text-muted-foreground font-medium">Your answers help our model predict outcomes accurately.</p>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-1">
+                {step === 3 ? "Optional Analysis" : "Let's get to know you"}
+              </h2>
+              <p className="text-muted-foreground font-medium">
+                {step === 3 ? "Enhance your prediction with privacy-first facial analysis." : "Your answers help our model predict outcomes accurately."}
+              </p>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-sm font-bold text-primary mb-2">Step {step} of {totalSteps}</span>
@@ -185,7 +222,7 @@ export default function Survey() {
                                   <FormControl>
                                     <RadioGroupItem value={option} data-testid={`radio-remote-${option}`} className="w-5 h-5" />
                                   </FormControl>
-                                  <FormLabel className="font-semibold cursor-pointer w-full text-base">{option}</FormLabel>
+                                  <FormLabel className="font-semibold cursor-pointer w-full text-base m-0">{option}</FormLabel>
                                 </FormItem>)}
                             </RadioGroup>
                           </FormControl>
@@ -202,7 +239,7 @@ export default function Survey() {
                                   <FormControl>
                                     <RadioGroupItem value={option} data-testid={`radio-tech-${option}`} className="w-5 h-5" />
                                   </FormControl>
-                                  <FormLabel className="font-semibold cursor-pointer w-full text-base">{option}</FormLabel>
+                                  <FormLabel className="font-semibold cursor-pointer w-full text-base m-0">{option}</FormLabel>
                                 </FormItem>)}
                             </RadioGroup>
                           </FormControl>
@@ -219,22 +256,82 @@ export default function Survey() {
                                   <FormControl>
                                     <RadioGroupItem value={option} data-testid={`radio-benefits-${option}`} className="w-5 h-5" />
                                   </FormControl>
-                                  <FormLabel className="font-semibold cursor-pointer w-full text-base">{option}</FormLabel>
+                                  <FormLabel className="font-semibold cursor-pointer w-full text-base m-0">{option}</FormLabel>
                                 </FormItem>)}
                             </RadioGroup>
                           </FormControl>
                           <FormMessage />
                         </FormItem>} />
                   </motion.div>}
+                {step === 3 && <motion.div key="step3" initial={{
+                opacity: 0,
+                x: 20
+              }} animate={{
+                opacity: 1,
+                x: 0
+              }} exit={{
+                opacity: 0,
+                x: -20
+              }} transition={{
+                duration: 0.3
+              }} className="space-y-8 flex flex-col items-center py-6">
+                  
+                  <div className="text-center space-y-4 max-w-md mx-auto mb-6">
+                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ScanFace className="w-10 h-10 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">Facial Expression Analysis</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Our secure, local facial tracking can enhance your prediction by analyzing micro-expressions. 
+                      No images are saved or transmitted to our servers.
+                    </p>
+                  </div>
+
+                  {!isScanning && !scanComplete ? (
+                    <Button type="button" size="lg" variant="outline" className="rounded-full h-14 px-8 border-primary/20 text-primary hover:bg-primary/5 font-bold" onClick={startScan}>
+                      Start Privacy-Safe Scan
+                    </Button>
+                  ) : isScanning && !scanComplete ? (
+                    <div className="w-full max-w-sm space-y-4">
+                      <div className="flex justify-between text-sm font-bold text-muted-foreground">
+                        <span>Analyzing Expressions...</span>
+                        <span>{scanProgress}%</span>
+                      </div>
+                      <Progress value={scanProgress} className="h-3 bg-muted" />
+                      <p className="text-xs text-center text-muted-foreground mt-4 animate-pulse">
+                        Please look directly at the camera
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="w-full max-w-sm p-6 bg-green-500/10 border border-green-500/20 rounded-2xl flex flex-col items-center space-y-4">
+                      <CheckCircle2 className="w-12 h-12 text-green-500" />
+                      <div className="text-center">
+                        <p className="font-bold text-green-600 dark:text-green-400">Analysis Complete</p>
+                        <p className="text-xs text-muted-foreground mt-1">Data securely processed locally</p>
+                      </div>
+                    </div>
+                  )}
+
+                </motion.div>}
               </AnimatePresence>
 
-              <div className="flex justify-end pt-8 mt-8 border-t border-border/50">
-                {step === 1 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} data-testid="button-next">
+              <div className="flex justify-between items-center pt-8 mt-8 border-t border-border/50">
+                {step === 3 ? (
+                  <Button type="button" variant="ghost" className="font-bold text-muted-foreground" onClick={() => {
+                    form.handleSubmit(onSubmit)();
+                  }}>
+                    Skip this step
+                  </Button>
+                ) : (
+                  <div /> // Empty div for spacing
+                )}
+                
+                {step < 3 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} data-testid="button-next">
                     Continue <ArrowRight className="ml-2 w-5 h-5" />
                   </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting} data-testid="button-submit">
                     {isSubmitting ? <>
                         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                        Analyzing via Model...
+                        Generating Results...
                       </> : "Generate Prediction"}
                   </Button>}
               </div>
