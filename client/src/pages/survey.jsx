@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 
 const surveySchema = z.object({
-  age: z.string().optional(),
+  age: z.string().refine(val => !val || (!isNaN(parseInt(val)) && parseInt(val) >= 13 && parseInt(val) <= 120), "Please enter a valid age between 13 and 120").optional(),
   gender: z.string().optional(),
   familyHistory: z.string().optional(),
   workInterfere: z.string().optional(),
@@ -40,6 +40,7 @@ export default function Survey() {
 
   const form = useForm({
     resolver: zodResolver(surveySchema),
+    mode: "onChange",
     defaultValues: {
       age: "",
       gender: "",
@@ -54,17 +55,22 @@ export default function Survey() {
     }
   });
 
+  const age = form.watch("age");
+  const gender = form.watch("gender");
+  const familyHistory = form.watch("familyHistory");
+  const workInterfere = form.watch("workInterfere");
+  
+  const moodFrequency = form.watch("moodFrequency");
+  const panicAttacks = form.watch("panicAttacks");
+  const sleepQuality = form.watch("sleepQuality");
+
+  const { errors } = form.formState;
+
+  const step1Complete = !!(age && gender && familyHistory && workInterfere) && !errors.age;
+  const step2Complete = !!(moodFrequency && panicAttacks && sleepQuality);
+
   const onSubmit = data => {
-    // Validate step 2 fields before submitting
-    let hasError = false;
-    ["moodFrequency", "panicAttacks", "sleepQuality"].forEach(f => {
-      if (!data[f]) {
-        form.setError(f, { type: "manual", message: "Please answer this question" });
-        hasError = true;
-      }
-    });
-    
-    if (hasError) return;
+    if (!step2Complete) return;
 
     setIsSubmitting(true);
     // Simulate ML processing time
@@ -73,27 +79,13 @@ export default function Survey() {
         ...data,
         faceScanned: false // Force to false since step 3 is skipped
       }));
+      sessionStorage.removeItem("assessmentSaved"); // Reset save flag for new result
       setLocation("/result");
     }, 2500);
   };
 
   const nextStep = () => {
-    const values = form.getValues();
-    let hasError = false;
-    
-    if (step === 1) {
-      const requiredFields = ["age", "gender", "familyHistory", "workInterfere"];
-      requiredFields.forEach(f => {
-        if (!values[f]) {
-          form.setError(f, { type: "manual", message: "Please answer this question" });
-          hasError = true;
-        } else {
-          form.clearErrors(f);
-        }
-      });
-    }
-    
-    if (!hasError) {
+    if (step1Complete) {
       setStep(step + 1);
     }
   };
@@ -510,22 +502,11 @@ export default function Survey() {
               </AnimatePresence>
 
               <div className="flex justify-between items-center pt-8 mt-8 border-t border-border/50">
-                {/* Step 3 logic commented out
-                {step === 3 ? (
-                  <Button type="button" variant="ghost" className="font-bold text-muted-foreground" onClick={() => {
-                    form.handleSubmit(onSubmit)();
-                  }}>
-                    Skip this step
-                  </Button>
-                ) : (
-                  <div /> // Empty div for spacing
-                )}
-                */}
                 <div />
                 
-                {step < 2 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} data-testid="button-next">
+                {step < 2 ? <Button type="button" size="lg" className="rounded-full h-14 px-8 shadow-md shadow-primary/20 text-lg font-bold" onClick={nextStep} disabled={!step1Complete} data-testid="button-next">
                     Continue <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting} data-testid="button-submit">
+                  </Button> : <Button type="submit" size="lg" className="rounded-full h-14 px-8 shadow-lg shadow-primary/30 text-lg font-bold" disabled={isSubmitting || !step2Complete} data-testid="button-submit">
                     {isSubmitting ? <>
                         <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                         Generating Results...

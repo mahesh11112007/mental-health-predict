@@ -16,17 +16,56 @@ export default function Auth() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate network request
+    
     setTimeout(() => {
       setIsLoading(false);
-      // Let's redirect to a mock dashboard
-      // Add fake user to session storage
-      sessionStorage.setItem("user", JSON.stringify({ 
-        name: isLogin ? "Alex Doe" : e.target.name?.value,
-        email: e.target.email.value 
-      }));
+      const email = e.target.email.value;
+      const password = e.target.password.value;
+      
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      let activeUser = null;
+
+      if (isLogin) {
+        activeUser = users.find(u => u.email === email && u.password === password);
+        if (!activeUser) {
+          alert("Invalid credentials. Please check your email and password.");
+          return;
+        }
+      } else {
+        if (users.find(u => u.email === email)) {
+          alert("An account with this email already exists.");
+          return;
+        }
+        activeUser = { 
+          id: Date.now(), 
+          name: e.target.name.value, 
+          email, 
+          password, 
+          history: [] 
+        };
+        users.push(activeUser);
+      }
+      
+      // Check for pending assessment
+      const pending = sessionStorage.getItem("pendingAssessment");
+      if (pending) {
+        const p = JSON.parse(pending);
+        if (!activeUser.history) activeUser.history = [];
+        if (!activeUser.history.find(h => h.id === p.id)) {
+          activeUser.history.push(p);
+        }
+        sessionStorage.removeItem("pendingAssessment");
+      }
+
+      // Save back users if updated
+      const userIndex = users.findIndex(u => u.email === activeUser.email);
+      users[userIndex] = activeUser;
+      localStorage.setItem("users", JSON.stringify(users));
+      
+      localStorage.setItem("currentUser", JSON.stringify(activeUser));
+      
       setLocation("/dashboard");
-    }, 1500);
+    }, 1000);
   };
 
   return (

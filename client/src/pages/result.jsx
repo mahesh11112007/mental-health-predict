@@ -51,10 +51,51 @@ export default function Result() {
     if (riskScore > 65) riskLevel = "High";
     else if (riskScore > 35) riskLevel = "Moderate";
     
-    setPrediction({
+    const confidenceScore = 82 + Math.random() * 15;
+    
+    const resultObj = {
       risk: riskLevel,
-      confidence: 82 + Math.random() * 15 // Random confidence between 82-97%
-    });
+      confidence: confidenceScore
+    };
+    
+    setPrediction(resultObj);
+
+    // If user is logged in, save to their history
+    const currentUser = localStorage.getItem("currentUser");
+    if (currentUser && !sessionStorage.getItem("assessmentSaved")) {
+      const user = JSON.parse(currentUser);
+      const newAssessment = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        risk: resultObj.risk,
+        confidence: resultObj.confidence,
+        score: riskScore > 100 ? 100 : riskScore
+      };
+      
+      if (!user.history) user.history = [];
+      user.history.push(newAssessment);
+      
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      const userIndex = users.findIndex(u => u.email === user.email);
+      if (userIndex !== -1) {
+        users[userIndex] = user;
+        localStorage.setItem("users", JSON.stringify(users));
+      }
+      
+      sessionStorage.setItem("assessmentSaved", "true");
+    } else if (!currentUser) {
+      // Temporarily store for signup
+      sessionStorage.setItem("pendingAssessment", JSON.stringify({
+        id: Date.now(),
+        date: new Date().toISOString(),
+        risk: resultObj.risk,
+        confidence: resultObj.confidence,
+        score: riskScore > 100 ? 100 : riskScore
+      }));
+    }
+
   }, [setLocation]);
   if (!prediction) return null;
   return <div className="min-h-screen bg-muted/30 py-12 px-4 flex flex-col items-center relative overflow-hidden">
