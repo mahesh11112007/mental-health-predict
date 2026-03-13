@@ -3,22 +3,14 @@ import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Calendar, Activity, LogOut, ArrowRight, TrendingUp } from "lucide-react";
+import { Brain, Calendar, Activity, Home, ArrowRight, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    const userData = sessionStorage.getItem("user");
-    if (!userData) {
-      setLocation("/auth");
-      return;
-    }
-    setUser(JSON.parse(userData));
-
     // Load history from session storage, or set mock data if empty
     let pastAssessments = JSON.parse(sessionStorage.getItem("assessmentHistory") || "[]");
     
@@ -38,29 +30,46 @@ export default function Dashboard() {
           risk: "Moderate",
           confidence: 85.5,
           score: 55
-        },
-        {
-          id: 3,
-          date: new Date().toISOString(),
-          risk: "Low",
-          confidence: 91.0,
-          score: 28
         }
       ];
       sessionStorage.setItem("assessmentHistory", JSON.stringify(pastAssessments));
     }
     
+    // Check for a recently completed assessment to merge
+    const newSurveyResult = sessionStorage.getItem("surveyResult");
+    if (newSurveyResult && !sessionStorage.getItem("assessmentSaved")) {
+      const parsedNew = JSON.parse(newSurveyResult);
+      // In a real app we'd map survey result back to score, here we mock it
+      let riskScore = 0;
+      if (parsedNew.familyHistory === "Yes") riskScore += 20;
+      if (parsedNew.workInterfere === "Often") riskScore += 25;
+      else if (parsedNew.workInterfere === "Sometimes") riskScore += 15;
+      if (parsedNew.moodFrequency === "Nearly every day") riskScore += 25;
+      else if (parsedNew.moodFrequency === "More than half the days") riskScore += 15;
+      if (parsedNew.panicAttacks === "Yes, frequently") riskScore += 20;
+      else if (parsedNew.panicAttacks === "Yes, occasionally") riskScore += 10;
+      
+      let riskLevel = "Low";
+      if (riskScore > 65) riskLevel = "High";
+      else if (riskScore > 35) riskLevel = "Moderate";
+
+      const newAssessment = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        risk: riskLevel,
+        confidence: 82 + Math.random() * 15,
+        score: riskScore > 100 ? 100 : riskScore
+      };
+      
+      pastAssessments.push(newAssessment);
+      sessionStorage.setItem("assessmentHistory", JSON.stringify(pastAssessments));
+      sessionStorage.setItem("assessmentSaved", "true");
+    }
+    
     // Sort by date descending
     pastAssessments.sort((a, b) => new Date(b.date) - new Date(a.date));
     setHistory(pastAssessments);
-  }, [setLocation]);
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("user");
-    setLocation("/");
-  };
-
-  if (!user) return null;
+  }, []);
 
   const latestAssessment = history[0];
 
@@ -88,12 +97,11 @@ export default function Dashboard() {
           </div>
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-muted-foreground hidden md:inline-block">
-            Logged in as <strong className="text-foreground">{user.name || user.email}</strong>
-          </span>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-red-500 font-semibold">
-            <LogOut className="w-4 h-4 mr-2" /> Sign Out
-          </Button>
+          <Link href="/">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground font-semibold">
+              <Home className="w-4 h-4 mr-2" /> Home
+            </Button>
+          </Link>
         </div>
       </header>
 

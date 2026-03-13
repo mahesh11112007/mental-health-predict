@@ -298,9 +298,9 @@ export default function Result() {
           </div>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-8">
-            <Link href="/auth">
-              <Button size="lg" className="rounded-full h-14 px-8 font-bold gap-2 shadow-lg shadow-primary/20 text-lg w-full sm:w-auto" data-testid="button-save-results">
-                Create Account to Save Results
+            <Link href="/dashboard">
+              <Button size="lg" className="rounded-full h-14 px-8 font-bold gap-2 shadow-lg shadow-primary/20 text-lg w-full sm:w-auto" data-testid="button-view-dashboard">
+                View Dashboard
               </Button>
             </Link>
             <Link href="/survey">
