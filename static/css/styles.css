@@ -983,3 +983,117 @@ tr:last-child td { border-bottom: none; }
         font-size: 0.9rem;
     }
 }
+
+/* Knowledge Base Tabs */
+.knowledge-tabs {
+    margin-top: 3rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+.tabs-header {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    background: var(--muted);
+    scrollbar-width: none;
+}
+.tabs-header::-webkit-scrollbar { display: none; }
+.tab-btn {
+    padding: 1.25rem 2rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--muted-foreground);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.tab-btn:hover {
+    color: var(--foreground);
+    background: rgba(255,255,255,0.5);
+}
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--card);
+}
+.tab-content {
+    display: none;
+    padding: 3rem 2.5rem;
+    animation: fadeIn 0.4s ease;
+}
+.tab-content.active {
+    display: block;
+}
+.condition-card {
+    background: var(--background);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    border-left: 4px solid var(--primary);
+    margin-bottom: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
+.condition-card::after {
+    content: "Tap to learn more";
+    position: absolute;
+    top: 1.75rem;
+    right: 1.75rem;
+    font-size: 0.8rem;
+    color: var(--primary);
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+.condition-card:hover::after, .condition-card.expanded::after {
+    opacity: 0;
+}
+.condition-card:hover, .condition-card.expanded {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -10px rgba(0,0,0,0.1);
+    background: var(--card);
+}
+.condition-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: color 0.3s;
+}
+.condition-card:hover .condition-title, .condition-card.expanded .condition-title {
+    color: var(--primary);
+}
+.condition-card[style*="border-left-color: var(--success)"]:hover .condition-title,
+.condition-card[style*="border-left-color: var(--success)"].expanded .condition-title {
+    color: var(--success);
+}
+.condition-desc {
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-height: 0;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+    margin-top: 0;
+}
+.condition-card:hover .condition-desc, .condition-card.expanded .condition-desc {
+    max-height: 200px;
+    opacity: 1;
+    visibility: visible;
+    margin-top: 1rem;
+}
+.md-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}

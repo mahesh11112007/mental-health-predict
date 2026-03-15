@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Mental Health Predictor - Wellbeing Prediction Assessment{% endblock %}
+{% block title %}MentalHealthPredictor - Wellbeing Prediction Assessment{% endblock %}
 
 {% block content %}
 <div class="hero-section pattern-bg">
@@ -36,8 +36,8 @@
                     <div class="stat-label">Prediction Accuracy</div>
                 </div>
                 <div class="stat-item text-center">
-                    <div class="stat-value text-foreground">Privacy</div>
-                    <div class="stat-label">Local Processing</div>
+                    <div class="stat-value text-foreground">Secure</div>
+                    <div class="stat-label">Privacy Focused</div>
                 </div>
                 <div class="stat-item text-center">
                     <div class="stat-value text-foreground">2 min</div>
@@ -84,4 +84,93 @@
         </div>
     </div>
 </section>
+
+<section id="knowledge-base" class="section bg-background">
+    <div class="container pb-12">
+        <div class="text-center mb-10">
+            <h2 class="section-title text-3xl font-bold text-foreground">Understanding the Dictionary</h2>
+            <p class="section-subtitle text-muted max-w-2xl mx-auto mt-4">Learn more about the specific conditions we check for and the self-care techniques we recommend.</p>
+        </div>
+
+        <div class="knowledge-tabs">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="conditions"><i data-lucide="book-open"></i> Condition Meanings</button>
+                <button class="tab-btn" data-tab="selfcare"><i data-lucide="heart"></i> Self-Care Techniques</button>
+            </div>
+            
+            <div class="tab-content active" id="tab-conditions">
+                <div class="grid md-grid-2 gap-6 text-left">
+                    <div class="condition-card">
+                        <div class="condition-title"><i data-lucide="activity" class="text-primary icon-sm"></i> Anxiety Disorder</div>
+                        <div class="condition-desc">Characterized by excessive, persistent worry and fear about everyday situations. It can cause physical symptoms like a rapid heart rate and interfere with daily living and focus.</div>
+                    </div>
+                    <div class="condition-card">
+                        <div class="condition-title"><i data-lucide="trending-up" class="text-primary icon-sm"></i> Bipolar Disorder</div>
+                        <div class="condition-desc">A complex disorder associated with extreme mood swings that include emotional highs (mania or hypomania) and severe lows (depression), affecting energy levels and sleep.</div>
+                    </div>
+                    <div class="condition-card">
+                        <div class="condition-title"><i data-lucide="cloud-rain" class="text-primary icon-sm"></i> Depression</div>
+                        <div class="condition-desc">A mood disorder that causes a persistent feeling of sadness, emptiness, and loss of interest in activities once enjoyed. It heavily impacts how you feel, think, and handle daily activities.</div>
+                    </div>
+                    <div class="condition-card">
+                        <div class="condition-title"><i data-lucide="alert-triangle" class="text-primary icon-sm"></i> PTSD</div>
+                        <div class="condition-desc">Post-Traumatic Stress Disorder (PTSD) is triggered by experiencing or witnessing a terrifying event. Symptoms may include flashbacks, severe nightmares, and uncontrollable thoughts.</div>
+                    </div>
+                    <div class="condition-card">
+                        <div class="condition-title"><i data-lucide="git-branch" class="text-primary icon-sm"></i> Schizophrenia</div>
+                        <div class="condition-desc">A serious mental disorder affecting a person's ability to think, feel, and behave clearly. It may result in some combination of hallucinations, delusions, and extremely disordered thinking.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-selfcare">
+                <div class="grid md-grid-2 gap-6 text-left">
+                    <div class="condition-card" style="border-left-color: var(--success);">
+                        <div class="condition-title"><i data-lucide="wind" class="text-success icon-sm"></i> 4-4-4-4 Box Breathing</div>
+                        <div class="condition-desc">A powerful stress-relief technique to calm your nervous system. <strong>How to do it:</strong> Inhale deeply for 4 seconds, hold your breath for 4 seconds, exhale slowly for 4 seconds, and hold empty for 4 seconds. Repeat.</div>
+                    </div>
+                    <div class="condition-card" style="border-left-color: var(--success);">
+                        <div class="condition-title"><i data-lucide="eye" class="text-success icon-sm"></i> 5-4-3-2-1 Grounding</div>
+                        <div class="condition-desc">A mindfulness method designed to calm panic and anxiety. <strong>How to do it:</strong> Identify 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, and 1 you can taste to bring yourself back to the present.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        // Add tap-to-expand support for condition cards
+        const conditionCards = document.querySelectorAll('.condition-card');
+        conditionCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Toggle expanded state on click (useful for mobile)
+                card.classList.toggle('expanded');
+                
+                // Optional: close other cards when one is opened
+                conditionCards.forEach(c => {
+                    if(c !== card) c.classList.remove('expanded');
+                });
+            });
+        });
+    });
+</script>
 {% endblock %}
