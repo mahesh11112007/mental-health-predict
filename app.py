@@ -240,7 +240,7 @@ def admin():
     provided_pass = request.args.get('pass')
     
     if provided_pass != admin_pass:
-        return f"<h3>Access Denied</h3><p>Please provide the correct password in the URL, e.g., <code>/admin?pass=your_password</code></p><p>The default password is <code>admin123</code> (change this in Vercel Environment Variables as <code>ADMIN_PASSWORD</code>).</p>", 403
+        return f"<h3 style='color:red;'>Access Denied</h3><p><code>/admin?pass=your_password</code></p>", 403
         
     assessments = Assessment.query.order_by(Assessment.date.desc()).all()
     return render_template('admin.html', assessments=assessments)
