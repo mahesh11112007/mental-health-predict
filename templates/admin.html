@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | MentalHealthPredictor{% endblock %}
+
+{% block content %}
+<div class="container relative z-10 py-12">
+    <div class="flex items-center justify-between mb-8 max-w-[1200px] mx-auto">
+        <div>
+            <h1 class="text-4xl font-extrabold tracking-tight mb-2">Admin Dashboard</h1>
+            <p class="text-muted">Review all submitted assessments and risk trends.</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="stat-card p-4 min-w-[200px]">
+                <p class="text-xs font-bold text-muted uppercase tracking-wider mb-1">Total Records</p>
+                <h3 class="text-2xl font-black text-primary">{{ assessments|length }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="survey-card max-w-[1200px] mx-auto overflow-hidden">
+        <div class="p-6 border-b border-border bg-muted/30">
+            <h2 class="text-xl font-bold">Assessment Records</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-muted/50">
+                        <th class="p-4 font-bold border-b border-border">ID</th>
+                        <th class="p-4 font-bold border-b border-border">Date</th>
+                        <th class="p-4 font-bold border-b border-border">User Name</th>
+                        <th class="p-4 font-bold border-b border-border">Age</th>
+                        <th class="p-4 font-bold border-b border-border">Risk Level</th>
+                        <th class="p-4 font-bold border-b border-border">Score</th>
+                        <th class="p-4 font-bold border-b border-border">Confidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in assessments %}
+                    <tr class="hover:bg-muted/30 transition-colors">
+                        <td class="p-4 border-b border-border font-mono text-sm text-muted">#{{ item.id }}</td>
+                        <td class="p-4 border-b border-border text-sm">{{ item.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="p-4 border-b border-border font-bold">{{ item.user_name or 'Anonymous' }}</td>
+                        <td class="p-4 border-b border-border">{{ item.age or 'N/A' }}</td>
+                        <td class="p-4 border-b border-border">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold 
+                                {% if item.risk_level == 'High' %}bg-destructive/10 text-destructive
+                                {% elif item.risk_level == 'Moderate' %}bg-warning/10 text-warning
+                                {% else %}bg-success/10 text-success{% endif %}">
+                                {{ item.risk_level }}
+                            </span>
+                        </td>
+                        <td class="p-4 border-b border-border font-mono">{{ item.score }}%</td>
+                        <td class="p-4 border-b border-border text-muted text-sm">{{ item.confidence|round(1) }}%</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="p-12 text-center text-muted italic">
+                            No assessments found in the database yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success\/10 { background-color: rgba(34, 197, 94, 0.1); }
+    .text-success { color: rgb(34, 197, 94); }
+    .bg-warning\/10 { background-color: rgba(234, 179, 8, 0.1); }
+    .text-warning { color: rgb(234, 179, 8); }
+</style>
+{% endblock %}

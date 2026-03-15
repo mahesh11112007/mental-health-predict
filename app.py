@@ -8,20 +8,23 @@ import pandas as pd
 from typing import Any, cast
 
 app = Flask(__name__)
-# Generate a random secret key for session management
-app.secret_key = secrets.token_hex(16)
+# Use an environment variable for the secret key, or generate one if not found (warning: session won't persist across restarts without a set key)
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 
 # Configure Database
-# For local development, it uses SQLite. For Vercel/Production, use a cloud DB (e.g., Vercel Postgres)
-# via the DATABASE_URL environment variable.
-database_url = os.environ.get('DATABASE_URL')
-if database_url and database_url.startswith("postgres://"):
-    # SQLAlchemy requires 'postgresql://' instead of 'postgres://' for some versions
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+# 1. Checks for Vercel/Neon environment variables
+database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or os.environ.get('STORAGE_URL')
 
-if not database_url:
+if database_url and (database_url.startswith("postgres://") or database_url.startswith("postgresql://")):
+    # SQLAlchemy requires 'postgresql://' instead of 'postgres://'
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    print(">>> MODE: Using Production Database (PostgreSQL)")
+else:
+    # 2. Local fallback: Uses the instance/mental_health_v2.db file
     os.makedirs(app.instance_path, exist_ok=True)
     database_url = f"sqlite:///{os.path.join(app.instance_path, 'mental_health_v2.db')}"
+    print(f">>> MODE: Using Local Database (SQLite) at {database_url}")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -228,6 +231,19 @@ def survey():
 @app.route('/result')
 def result():
     return render_template('result.html')
+
+@app.route('/admin')
+def admin():
+    # Simple password set in env, defaults to 'admin123' if not set
+    # Access via: /admin?pass=admin123
+    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    provided_pass = request.args.get('pass')
+    
+    if provided_pass != admin_pass:
+        return f"<h3>Access Denied</h3><p>Please provide the correct password in the URL, e.g., <code>/admin?pass=your_password</code></p><p>The default password is <code>admin123</code> (change this in Vercel Environment Variables as <code>ADMIN_PASSWORD</code>).</p>", 403
+        
+    assessments = Assessment.query.order_by(Assessment.date.desc()).all()
+    return render_template('admin.html', assessments=assessments)
 
 # --- API Endpoints ---
 @app.route('/api/predict', methods=['POST'])
