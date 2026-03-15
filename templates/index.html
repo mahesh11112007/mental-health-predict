@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Mental Health Predictor - Wellbeing Prediction Assessment{% endblock %}
+
+{% block content %}
+<div class="hero-section pattern-bg">
+    <div class="container hero-container relative z-10">
+
+        <div class="hero-content slide-up text-center max-w-3xl mx-auto" style="grid-column: 1 / -1;">
+            <div class="badge-pill mb-6 inline-flex">
+                <i data-lucide="sparkles" class="icon-sm text-primary"></i>
+                Smart Wellbeing Analysis
+            </div>
+
+            <h1 class="hero-title">
+                Understand Your <span class="text-gradient">Mental Wellbeing</span> Better
+            </h1>
+
+            <p class="hero-subtitle text-muted mt-6 text-lg">
+                Our advanced model analyzes your responses and lifestyle factors to predict mental health trends and
+                provide actionable, personalized insights.
+            </p>
+
+            <div class="hero-actions mt-10 flex gap-4 justify-center">
+                <a href="/survey" class="btn btn-primary btn-lg shadow-glow">
+                    Start Assessment <i data-lucide="arrow-right"></i>
+                </a>
+                <a href="#how-it-works" class="btn btn-outline btn-lg glass">
+                    How it Works
+                </a>
+            </div>
+
+            <div class="stats-row mt-12 flex gap-8 justify-center">
+                <div class="stat-item text-center">
+                    <div class="stat-value text-foreground">92%</div>
+                    <div class="stat-label">Prediction Accuracy</div>
+                </div>
+                <div class="stat-item text-center">
+                    <div class="stat-value text-foreground">Privacy</div>
+                    <div class="stat-label">Local Processing</div>
+                </div>
+                <div class="stat-item text-center">
+                    <div class="stat-value text-foreground">2 min</div>
+                    <div class="stat-label">Quick Assessment</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Background Decorators -->
+    <div class="decorator-blob blob-1"></div>
+    <div class="decorator-blob blob-2" style="background: var(--accent);"></div>
+</div>
+
+<section id="how-it-works" class="section bg-card">
+    <div class="container text-center">
+        <h2 class="section-title text-3xl font-bold text-foreground">How It Works</h2>
+        <p class="section-subtitle text-muted max-w-2xl mx-auto mt-4">Three simple steps to gain insights into your
+            mental health using advanced data analysis.</p>
+
+        <div class="grid md-grid-3 gap-8 mt-16 text-left">
+            <div class="feature-card glass">
+                <div class="icon-box bg-primary-10 text-primary mb-6">
+                    <i data-lucide="clipboard-list"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-foreground">1. Assessment</h3>
+                <p class="text-muted">Answer a few questions about your lifestyle, habits, and emotional state.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="icon-box bg-primary-10 text-primary mb-6">
+                    <i data-lucide="cpu"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-foreground">2. Processing</h3>
+                <p class="text-muted">Our model analyzes the inputs against vast datasets to find patterns.</p>
+            </div>
+            <div class="feature-card glass">
+                <div class="icon-box bg-primary-10 text-primary mb-6">
+                    <i data-lucide="line-chart"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-foreground">3. Actionable Insights</h3>
+                <p class="text-muted">Receive a comprehensive report with your risk levels and next steps.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment | Mental Health Predictor{% endblock %}
+
+{% block content %}
+<div class="container relative z-10 py-12">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8 max-w-[800px] mx-auto">
+        <a href="/" class="btn btn-outline gap-2 text-muted-foreground border-transparent">
+            <i data-lucide="arrow-left" class="icon-sm"></i> Back
+        </a>
+        <div class="flex items-center gap-2">
+            <i data-lucide="brain" class="text-primary icon-sm"></i>
+            <span class="font-bold tracking-tight">Wellbeing Assessment</span>
+        </div>
+        <div style="width: 80px"></div>
+    </div>
+
+    <!-- Survey Card -->
+    <div class="survey-card">
+        <div class="survey-header">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-extrabold mb-1">Let's get to know you</h2>
+                    <p class="text-muted">Your answers help our model predict outcomes accurately.</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-sm font-bold text-primary block mb-2">Step <span id="current-step">1</span> of 4</span>
+                </div>
+            </div>
+            <div class="step-indicator">
+                <div id="step-progress" class="step-progress" style="width: 25%;"></div>
+            </div>
+        </div>
+
+        <form id="survey-form">
+            <!-- Step 1: Personal Info & Mood -->
+            <div id="step-1" class="form-step space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="full_name" class="form-control" placeholder="Enter full name" required style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: var(--background); color: var(--foreground); font-size: 1rem;">
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="age" class="form-control" placeholder="Years" required style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: var(--background); color: var(--foreground); font-size: 1rem;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you often feel a depressed mood (sadness, emptiness)?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="depressed_mood" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="depressed_mood" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you experience persistent low mood or sadness?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="persistent_sadness" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="persistent_sadness" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Have you lost interest or pleasure in your activities?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="loss_interest" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="loss_interest" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you feel irritable more often than usual?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="irritability" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="irritability" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-8 border-t border-border mt-8">
+                    <button type="button" class="btn btn-primary btn-lg shadow-glow btn-next" data-next="2">
+                        Continue <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Energy, Focus & Sleep -->
+            <div id="step-2" class="form-step space-y-8 hidden">
+                <div class="form-group">
+                    <label>Do you experience frequent <span class="tooltip">fatigue<span class="tooltiptext">feeling very tired or having low energy</span></span> or loss of energy?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="fatigue" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="fatigue" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you find it difficult to concentrate or make decisions?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="difficulty_concentrating" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="difficulty_concentrating" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you have trouble with sleep (insomnia or oversleeping)?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="sleep_disturbance" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="sleep_disturbance" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Have you noticed a significant change in your weight or appetite?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="weight_change" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="weight_change" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-8 border-t border-border mt-8">
+                    <button type="button" class="btn btn-outline btn-lg btn-prev" data-prev="1">
+                        <i data-lucide="arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg shadow-glow btn-next" data-next="3">
+                        Continue <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Thoughts & Feelings -->
+            <div id="step-3" class="form-step space-y-8 hidden">
+                <div class="form-group">
+                    <label>Have you had sudden angry outbursts or temper?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="angry_outbursts" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="angry_outbursts" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you experience <span class="tooltip">racing thoughts<span class="tooltiptext">fast-moving and often repetitive thought patterns</span></span> (mind moving too fast)?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="racing_thoughts" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="racing_thoughts" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you feel <span class="tooltip">detached<span class="tooltiptext">feeling disconnected from your friends, family, or surroundings</span></span> from others or your surroundings?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="detachment" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="detachment" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Have you had thoughts of self-harm or suicide?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="suicidal_thoughts" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="suicidal_thoughts" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-8 border-t border-border mt-8">
+                    <button type="button" class="btn btn-outline btn-lg btn-prev" data-prev="2">
+                        <i data-lucide="arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg shadow-glow btn-next" data-next="4">
+                        Continue <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Trauma & Duration -->
+            <div id="step-4" class="form-step space-y-8 hidden">
+                <div class="form-group">
+                    <label>Have you ever experienced or witnessed a <span class="tooltip">traumatic event<span class="tooltiptext">a deeply distressing or shocking experience</span></span>?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="traumatic_event" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="traumatic_event" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Do you feel constantly on edge or <span class="tooltip">hypervigilance<span class="tooltiptext">being constantly tense, on guard, or highly sensitive to surroundings</span></span>?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="hypervigilance" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="hypervigilance" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Are you easily distracted (<span class="tooltip">distractibility<span class="tooltiptext">finding it hard to pay attention or easily drawn away</span></span>)?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="distractibility" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="distractibility" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Have these symptoms lasted for more than a month?</label>
+                    <div class="radio-group-grid">
+                        <label class="radio-card"><input type="radio" name="symptom_duration_month" value="Yes" required> Yes</label>
+                        <label class="radio-card"><input type="radio" name="symptom_duration_month" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-8 border-t border-border mt-8">
+                    <button type="button" class="btn btn-outline btn-lg btn-prev" data-prev="3">
+                        <i data-lucide="arrow-left"></i> Back
+                    </button>
+                    <button type="submit" id="btn-submit" class="btn btn-primary btn-lg shadow-glow">
+                        <span id="submit-text">Generate Prediction</span>
+                        <i id="submit-icon" data-lucide="sparkles"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('survey-form');
+    const stepProgress = document.getElementById('step-progress');
+    const currentStepText = document.getElementById('current-step');
+    const submitBtn = document.getElementById('btn-submit');
+    const submitText = document.getElementById('submit-text');
+    const submitIcon = document.getElementById('submit-icon');
+
+    // Handle styling selected radio cards
+    const radioInputs = document.querySelectorAll('input[type="radio"]');
+    radioInputs.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const name = this.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                r.closest('.radio-card')?.classList.remove('selected');
+            });
+            this.closest('.radio-card')?.classList.add('selected');
+        });
+    });
+
+    // Navigation logic
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const currentStepId = btn.closest('.form-step').id;
+            const nextStepNum = btn.getAttribute('data-next');
+            
+            // Validate current step
+            const inputs = document.getElementById(currentStepId).querySelectorAll('input[required]');
+            let allFilled = true;
+            
+            // Group radioactive inputs vs text/number inputs
+            const groups = new Set();
+            inputs.forEach(input => groups.add(input.name));
+            
+            groups.forEach(name => {
+                const el = document.querySelector(`input[name="${name}"]`);
+                if (el.type === 'radio') {
+                    if (!document.querySelector(`input[name="${name}"]:checked`)) {
+                        allFilled = false;
+                    }
+                } else {
+                    if (!el.value.trim()) {
+                        allFilled = false;
+                    }
+                }
+            });
+
+            if (!allFilled) {
+                App.showToast('Please answer all questions in this step', 'error');
+                return;
+            }
+
+            document.getElementById(currentStepId).classList.add('hidden');
+            document.getElementById(`step-${nextStepNum}`).classList.remove('hidden');
+            stepProgress.style.width = `${(nextStepNum / 4) * 100}%`;
+            currentStepText.textContent = nextStepNum;
+            window.scrollTo(0, 0);
+        });
+    });
+
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const currentStepId = btn.closest('.form-step').id;
+            const prevStepNum = btn.getAttribute('data-prev');
+
+            document.getElementById(currentStepId).classList.add('hidden');
+            document.getElementById(`step-${prevStepNum}`).classList.remove('hidden');
+            stepProgress.style.width = `${(prevStepNum / 4) * 100}%`;
+            currentStepText.textContent = prevStepNum;
+            window.scrollTo(0, 0);
+        });
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        submitBtn.disabled = true;
+        submitText.textContent = 'Analyzing...';
+        submitIcon.setAttribute('data-lucide', 'loader-2');
+        submitIcon.classList.add('animate-spin');
+        lucide.createIcons();
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        setTimeout(async () => {
+            try {
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    const result = await res.json();
+                    sessionStorage.setItem('surveyResult', JSON.stringify({
+                        prediction: result,
+                        surveyData: data
+                    }));
+                    window.location.href = '/result';
+                } else {
+                    App.showToast('Failed to generate prediction. Try again.', 'error');
+                    resetSubmit();
+                }
+            } catch (err) {
+                console.error(err);
+                App.showToast('Network error occurred.', 'error');
+                resetSubmit();
+            }
+        }, 1200);
+    });
+    
+    function resetSubmit() {
+        submitBtn.disabled = false;
+        submitText.textContent = 'Generate Prediction';
+        submitIcon.setAttribute('data-lucide', 'sparkles');
+        submitIcon.classList.remove('animate-spin');
+        lucide.createIcons();
+    }
+    
+    // Support animation spin
+    const style = document.createElement('style');
+    style.textContent = `
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}
