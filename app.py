@@ -232,25 +232,35 @@ def survey():
 def result():
     return render_template('result.html')
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    # Simple password set in env, defaults to 'admin123' if not set
-    # Access via: /admin?pass=admin123
     admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
-    provided_pass = request.args.get('pass')
     
-    if provided_pass != admin_pass:
-        return f"<h3 style='color:red;'>Access Denied</h3><p><code>/admin?pass=your_password</code></p>", 403
+    # Check if already authenticated via session or URL param
+    is_authenticated = session.get('admin_authed') == True
+    provided_pass = request.args.get('pass') or (request.form.get('password') if request.method == 'POST' else None)
+    
+    if provided_pass == admin_pass:
+        session['admin_authed'] = True
+        is_authenticated = True
+        # If password was in URL, redirect to clean URL but keep session
+        if request.args.get('pass'):
+            return redirect(url_for('admin'))
+    
+    if not is_authenticated:
+        return render_template('admin.html', authenticated=False)
         
     assessments = Assessment.query.order_by(Assessment.date.desc()).all()
-    return render_template('admin.html', assessments=assessments)
+    return render_template('admin.html', assessments=assessments, authenticated=True)
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_authed', None)
+    return redirect(url_for('index'))
 
 @app.route('/admin/delete/<int:id>')
 def delete_assessment(id):
-    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
-    provided_pass = request.args.get('pass')
-    
-    if provided_pass != admin_pass:
+    if session.get('admin_authed') != True:
         return "Unauthorized", 403
         
     assessment = Assessment.query.get_or_404(id)
@@ -261,7 +271,7 @@ def delete_assessment(id):
         db.session.rollback()
         print(f"Error deleting record: {e}")
         
-    return redirect(url_for('admin', **{'pass': admin_pass}))
+    return redirect(url_for('admin'))
 
 # --- API Endpoints ---
 @app.route('/api/predict', methods=['POST'])
