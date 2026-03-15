@@ -89,6 +89,8 @@ def calculate_risk(data):
 
     if all_no:
         return {
+            'name': data.get('full_name', 'Participant'),
+            'age': data.get('age', ''),
             'risk': 'Low',
             'confidence': 99.0,
             'score': 0,
@@ -98,6 +100,8 @@ def calculate_risk(data):
     
     if all_yes:
         return {
+            'name': data.get('full_name', 'Participant'),
+            'age': data.get('age', ''),
             'risk': 'High',
             'confidence': 99.0,
             'score': 100,
@@ -234,7 +238,7 @@ def result():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    admin_pass = os.environ.get('ADMIN_PASSWORD', 'MHP3')
     
     # Check if already authenticated via session or URL param
     is_authenticated = session.get('admin_authed') == True
