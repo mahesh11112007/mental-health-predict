@@ -245,6 +245,24 @@ def admin():
     assessments = Assessment.query.order_by(Assessment.date.desc()).all()
     return render_template('admin.html', assessments=assessments)
 
+@app.route('/admin/delete/<int:id>')
+def delete_assessment(id):
+    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    provided_pass = request.args.get('pass')
+    
+    if provided_pass != admin_pass:
+        return "Unauthorized", 403
+        
+    assessment = Assessment.query.get_or_404(id)
+    try:
+        db.session.delete(assessment)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting record: {e}")
+        
+    return redirect(url_for('admin', **{'pass': admin_pass}))
+
 # --- API Endpoints ---
 @app.route('/api/predict', methods=['POST'])
 def predict():
