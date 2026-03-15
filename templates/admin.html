@@ -6,142 +6,185 @@
 <div class="admin-dashboard-container">
     <div class="container py-8 md:py-16">
         {% if authenticated %}
-            <!-- Dashboard Header -->
-            <div class="dashboard-header animate-slide-down">
-                <div class="header-intro">
-                    <h1 class="premium-title">Admin <span class="text-primary">Dashboard</span></h1>
-                    <p class="premium-subtitle">Manage assessment records and monitor patient data insights.</p>
+        <!-- Dashboard Header -->
+        <div class="dashboard-header animate-slide-down">
+            <div class="header-intro">
+                <h1 class="premium-title">Admin <span class="text-primary">Dashboard</span></h1>
+                <p class="premium-subtitle">Manage assessment records and monitor patient data insights.</p>
+            </div>
+            <div class="header-actions">
+                <div class="stat-badge">
+                    <span class="stat-label">Total Records</span>
+                    <span class="stat-value">{{ assessments|length }}</span>
                 </div>
-                <div class="header-actions">
-                    <div class="stat-badge">
-                        <span class="stat-label">Total Records</span>
-                        <span class="stat-value">{{ assessments|length }}</span>
+                <a href="/admin/logout" class="btn-logout">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-main animate-fade-in">
+            <!-- Desktop Table View -->
+            <div class="desktop-view hidden md:block">
+                <div class="glass-table-wrapper">
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date Submitted</th>
+                                <th>Patient Name</th>
+                                <th>Age</th>
+                                <th>Risk Level</th>
+                                <th>Score</th>
+                                <th>Details</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in assessments %}
+                            <tr class="main-row">
+                                <td class="font-mono text-xs opacity-50">#{{ item.id }}</td>
+                                <td>{{ item.date.strftime('%b %d, %Y • %H:%M') }}</td>
+                                <td class="font-bold">{{ item.user_name or 'Anonymous' }}</td>
+                                <td>{{ item.age or '--' }}</td>
+                                <td>
+                                    <span class="badge badge-{{ item.risk_level }}">
+                                        {{ item.risk_level }}
+                                    </span>
+                                </td>
+                                <td class="font-bold">{{ item.score }}%</td>
+                                <td>
+                                    <button class="btn-detail-toggle" onclick="toggleDetails('details-{{ item.id }}')">
+                                        <span>View Report</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                </td>
+                                <td class="text-right">
+                                    <a href="{{ url_for('delete_assessment', id=item.id) }}" class="btn-icon-delete"
+                                        onclick="return confirm('Permanently delete this record?')">
+                                        <i data-lucide="trash-2"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr id="details-{{ item.id }}" class="detail-row hidden">
+                                <td colspan="8">
+                                    <div class="condition-breakdown-grid">
+                                        {% for cond, data in item.parsed_predictions.items() %}
+                                        <div class="condition-stat">
+                                            <div class="stat-info">
+                                                <span class="cond-name">{{ cond }}</span>
+                                                <span class="cond-val">{{ data.probability }}%</span>
+                                            </div>
+                                            <div class="stat-progress">
+                                                <div class="progress-bar {% if data.probability > 70 %}bg-danger{% elif data.probability > 30 %}bg-warning{% else %}bg-primary{% endif %}"
+                                                    style="--w: {{ data.probability }}%; width: var(--w);"></div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="mobile-view md:hidden space-y-4">
+                {% for item in assessments %}
+                <div class="mobile-record-card">
+                    <div class="card-header">
+                        <div>
+                            <span class="card-id">#{{ item.id }}</span>
+                            <h3 class="card-title">{{ item.user_name or 'Anonymous' }}</h3>
+                            <p class="card-date">{{ item.date.strftime('%b %d, %Y') }}</p>
+                        </div>
+                        <span class="badge badge-{{ item.risk_level }}">{{ item.risk_level }}</span>
                     </div>
-                    <a href="/admin/logout" class="btn-logout">
-                        <i data-lucide="log-out"></i>
-                        <span>Logout</span>
+
+                    <div class="card-stats">
+                        <div class="stat-mini">
+                            <span class="label">Age</span>
+                            <span class="val">{{ item.age or '-' }}</span>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="label">Score</span>
+                            <span class="val">{{ item.score }}%</span>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="label">Conf.</span>
+                            <span class="val">{{ item.confidence|round(0) }}%</span>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Detailed Breakdown -->
+                    <div class="mobile-breakdown">
+                        <h4 class="breakdown-title">Condition Breakdown</h4>
+                        <div class="breakdown-list">
+                            {% for cond, data in item.parsed_predictions.items() %}
+                            <div class="mobile-cond-item">
+                                <div class="info">
+                                    <span>{{ cond }}</span>
+                                    <strong>{{ data.probability }}%</strong>
+                                </div>
+                                <div class="progress-small">
+                                    <div class="bar {% if data.probability > 70 %}bg-danger{% elif data.probability > 30 %}bg-warning{% else %}bg-primary{% endif %}"
+                                        style="--w: {{ data.probability }}%; width: var(--w);"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('delete_assessment', id=item.id) }}" class="btn-card-delete"
+                        onclick="return confirm('Permanently delete this record?')">
+                        <i data-lucide="trash-2"></i> Delete Assessment
                     </a>
                 </div>
-            </div>
-
-            <!-- Dashboard Content -->
-            <div class="dashboard-main animate-fade-in">
-                <!-- Desktop Table View -->
-                <div class="desktop-view hidden md:block">
-                    <div class="glass-table-wrapper">
-                        <table class="premium-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Date Submitted</th>
-                                    <th>Patient Name</th>
-                                    <th>Age</th>
-                                    <th>Risk Level</th>
-                                    <th>Score</th>
-                                    <th class="text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in assessments %}
-                                <tr>
-                                    <td class="font-mono text-xs opacity-50">#{{ item.id }}</td>
-                                    <td>{{ item.date.strftime('%b %d, %Y • %H:%M') }}</td>
-                                    <td class="font-bold">{{ item.user_name or 'Anonymous' }}</td>
-                                    <td>{{ item.age or '--' }}</td>
-                                    <td>
-                                        <span class="badge badge-{{ item.risk_level }}">
-                                            {{ item.risk_level }}
-                                        </span>
-                                    </td>
-                                    <td class="font-bold">{{ item.score }}%</td>
-                                    <td class="text-right">
-                                        <a href="{{ url_for('delete_assessment', id=item.id) }}" 
-                                           class="btn-icon-delete"
-                                           onclick="return confirm('Permanently delete this record?')">
-                                            <i data-lucide="trash-2"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                {% else %}
+                <div class="empty-state">
+                    <i data-lucide="database-zap"></i>
+                    <p>No assessment records found yet.</p>
                 </div>
-
-                <!-- Mobile Card View -->
-                <div class="mobile-view md:hidden space-y-4">
-                    {% for item in assessments %}
-                    <div class="mobile-record-card">
-                        <div class="card-header">
-                            <div>
-                                <span class="card-id">#{{ item.id }}</span>
-                                <h3 class="card-title">{{ item.user_name or 'Anonymous' }}</h3>
-                                <p class="card-date">{{ item.date.strftime('%b %d, %Y') }}</p>
-                            </div>
-                            <span class="badge badge-{{ item.risk_level }}">{{ item.risk_level }}</span>
-                        </div>
-                        <div class="card-stats">
-                            <div class="stat-mini">
-                                <span class="label">Age</span>
-                                <span class="val">{{ item.age or '-' }}</span>
-                            </div>
-                            <div class="stat-mini">
-                                <span class="label">Score</span>
-                                <span class="val">{{ item.score }}%</span>
-                            </div>
-                            <div class="stat-mini">
-                                <span class="label">Conf.</span>
-                                <span class="val">{{ item.confidence|round(0) }}%</span>
-                            </div>
-                        </div>
-                        <a href="{{ url_for('delete_assessment', id=item.id) }}" 
-                           class="btn-card-delete"
-                           onclick="return confirm('Permanently delete this record?')">
-                            <i data-lucide="trash-2"></i> Delete Assessment
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i data-lucide="database-zap"></i>
-                        <p>No assessment records found yet.</p>
-                    </div>
-                    {% endfor %}
-                </div>
+                {% endfor %}
             </div>
+        </div>
 
         {% else %}
-            <!-- Enhanced Login Section -->
-            <div class="login-screen animate-slide-up">
-                <div class="login-card glassmorphism">
-                    <div class="login-header">
-                        <div class="login-icon">
-                            <i data-lucide="shield-check"></i>
-                        </div>
-                        <h2>Admin Access</h2>
-                        <p>Authorized personnel only. Please verify your identity.</p>
+        <!-- Enhanced Login Section -->
+        <div class="login-screen animate-slide-up">
+            <div class="login-card glassmorphism">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <i data-lucide="shield-check"></i>
                     </div>
-
-                    <form method="POST" action="/admin" class="login-form">
-                        <div class="input-wrapper">
-                            <label for="password">Security Password</label>
-                            <div class="input-with-icon">
-                                <i data-lucide="key"></i>
-                                <input type="password" id="password" name="password" 
-                                       placeholder="••••••••" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-unlock">
-                            <span>Unlock Dashboard</span>
-                            <i data-lucide="chevron-right"></i>
-                        </button>
-                        {% if request.method == 'POST' %}
-                        <p class="error-msg ripple">
-                            <i data-lucide="alert-circle"></i> Invalid credentials.
-                        </p>
-                        {% endif %}
-                    </form>
+                    <h2>Admin Access</h2>
+                    <p>Authorized personnel only. Please verify your identity.</p>
                 </div>
+
+                <form method="POST" action="/admin" class="login-form">
+                    <div class="input-wrapper">
+                        <label for="password">Security Password</label>
+                        <div class="input-with-icon">
+                            <i data-lucide="key"></i>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-unlock">
+                        <span>Unlock Dashboard</span>
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+                    {% if request.method == 'POST' %}
+                    <p class="error-msg ripple">
+                        <i data-lucide="alert-circle"></i> Invalid credentials.
+                    </p>
+                    {% endif %}
+                </form>
             </div>
+        </div>
         {% endif %}
     </div>
 </div>
@@ -165,13 +208,51 @@
     }
 
     /* Animations */
-    .animate-slide-down { animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .animate-fade-in { animation: fadeIn 0.8s ease forwards; }
+    .animate-slide-down {
+        animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease forwards;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
 
     /* Header Styles */
     .dashboard-header {
@@ -180,15 +261,34 @@
         gap: 1.5rem;
         margin-bottom: 3rem;
     }
+
     @media (min-width: 768px) {
-        .dashboard-header { flex-direction: row; align-items: center; justify-content: space-between; }
+        .dashboard-header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
     }
 
-    .premium-title { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--p-text); margin-bottom: 0.5rem; }
-    .premium-subtitle { color: var(--p-muted); font-size: 1.1rem; }
+    .premium-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--p-text);
+        margin-bottom: 0.5rem;
+    }
 
-    .header-actions { display: flex; align-items: center; gap: 1rem; }
-    
+    .premium-subtitle {
+        color: var(--p-muted);
+        font-size: 1.1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
     .stat-badge {
         background: white;
         padding: 0.75rem 1.5rem;
@@ -198,8 +298,22 @@
         display: flex;
         flex-direction: column;
     }
-    .stat-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--p-muted); letter-spacing: 0.05em; }
-    .stat-value { font-size: 1.5rem; font-weight: 900; color: var(--p-primary); line-height: 1; margin-top: 0.25rem; }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--p-muted);
+        letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--p-primary);
+        line-height: 1;
+        margin-top: 0.25rem;
+    }
 
     .btn-logout {
         display: flex;
@@ -214,7 +328,11 @@
         font-size: 0.9rem;
         transition: all 0.2s;
     }
-    .btn-logout:hover { background: #e2e8f0; transform: translateY(-2px); }
+
+    .btn-logout:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+    }
 
     /* Table Styles */
     .glass-table-wrapper {
@@ -224,7 +342,12 @@
         box-shadow: var(--p-shadow);
         overflow: hidden;
     }
-    .premium-table { width: 100%; border-collapse: collapse; }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
     .premium-table th {
         background: #f8fafc;
         padding: 1.25rem 1.5rem;
@@ -236,9 +359,21 @@
         letter-spacing: 0.05em;
         border-bottom: 1px solid var(--p-border);
     }
-    .premium-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: var(--p-text); }
-    .premium-table tr:hover td { background: #f8fafc; }
-    .premium-table tr:last-child td { border-bottom: none; }
+
+    .premium-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+        color: var(--p-text);
+    }
+
+    .premium-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    .premium-table tr:last-child td {
+        border-bottom: none;
+    }
 
     /* Badge & Button Styles */
     .badge {
@@ -249,9 +384,21 @@
         text-transform: uppercase;
         letter-spacing: 0.02em;
     }
-    .badge-High { background: #fee2e2; color: var(--p-danger); }
-    .badge-Moderate { background: #ffedd5; color: var(--p-warning); }
-    .badge-Low { background: #dcfce7; color: var(--p-success); }
+
+    .badge-High {
+        background: #fee2e2;
+        color: var(--p-danger);
+    }
+
+    .badge-Moderate {
+        background: #ffedd5;
+        color: var(--p-warning);
+    }
+
+    .badge-Low {
+        background: #dcfce7;
+        color: var(--p-success);
+    }
 
     .btn-icon-delete {
         width: 36px;
@@ -264,7 +411,11 @@
         transition: all 0.2s;
         text-decoration: none;
     }
-    .btn-icon-delete:hover { background: #fee2e2; color: var(--p-danger); }
+
+    .btn-icon-delete:hover {
+        background: #fee2e2;
+        color: var(--p-danger);
+    }
 
     /* Mobile Record Card */
     .mobile-record-card {
@@ -274,10 +425,33 @@
         border: 1px solid var(--p-border);
         box-shadow: var(--p-shadow);
     }
-    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
-    .card-id { font-family: monospace; font-size: 0.7rem; color: var(--p-muted); margin-bottom: 0.25rem; display: block; }
-    .card-title { font-size: 1.15rem; font-weight: 800; color: var(--p-text); }
-    .card-date { font-size: 0.8rem; color: var(--p-muted); margin-top: 0.1rem; }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+    }
+
+    .card-id {
+        font-family: monospace;
+        font-size: 0.7rem;
+        color: var(--p-muted);
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .card-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--p-text);
+    }
+
+    .card-date {
+        font-size: 0.8rem;
+        color: var(--p-muted);
+        margin-top: 0.1rem;
+    }
 
     .card-stats {
         display: grid;
@@ -288,9 +462,25 @@
         border-radius: 1rem;
         margin-bottom: 1.25rem;
     }
-    .stat-mini { text-align: center; }
-    .stat-mini .label { display: block; font-size: 0.65rem; font-weight: 800; color: var(--p-muted); text-transform: uppercase; margin-bottom: 0.25rem; }
-    .stat-mini .val { font-weight: 800; color: var(--p-text); font-size: 0.95rem; }
+
+    .stat-mini {
+        text-align: center;
+    }
+
+    .stat-mini .label {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--p-muted);
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-mini .val {
+        font-weight: 800;
+        color: var(--p-text);
+        font-size: 0.95rem;
+    }
 
     .btn-card-delete {
         display: flex;
@@ -307,7 +497,142 @@
         text-decoration: none;
         transition: all 0.2s;
     }
-    .btn-card-delete:hover { background: #fee2e2; }
+
+    .btn-card-delete:hover {
+        background: #fee2e2;
+    }
+
+    /* Detail Toggle & Breakdown Styles */
+    .btn-detail-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--p-primary-light);
+        color: var(--p-primary);
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-detail-toggle:hover {
+        background: var(--p-primary);
+        color: white;
+    }
+
+    .condition-breakdown-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 1rem;
+        margin: 0.5rem 1.5rem 1.5rem;
+    }
+
+    .condition-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .stat-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .cond-name {
+        color: var(--p-muted);
+    }
+
+    .cond-val {
+        color: var(--p-text);
+    }
+
+    .stat-progress {
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .bg-primary {
+        background: var(--p-primary);
+    }
+
+    .bg-warning {
+        background: var(--p-warning);
+    }
+
+    .bg-danger {
+        background: var(--p-danger);
+    }
+
+    .detail-row td {
+        padding: 0 !important;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* Mobile Breakdown Styles */
+    .mobile-breakdown {
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--p-border);
+        margin-bottom: 1.25rem;
+    }
+
+    .breakdown-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--p-text);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .breakdown-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-cond-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .mobile-cond-item .info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+    }
+
+    .progress-small {
+        height: 4px;
+        background: #f1f5f9;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-small .bar {
+        height: 100%;
+        border-radius: 2px;
+    }
 
     /* Login Screen Styles */
     .login-screen {
@@ -316,6 +641,7 @@
         align-items: center;
         padding-top: 3rem;
     }
+
     .login-card {
         width: 100%;
         max-width: 440px;
@@ -326,11 +652,12 @@
         text-align: center;
         border: 1px solid var(--p-border);
     }
+
     .glassmorphism {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(20px);
     }
-    
+
     .login-icon {
         width: 72px;
         height: 72px;
@@ -342,20 +669,50 @@
         justify-content: center;
         margin: 0 auto 1.5rem;
     }
-    .login-icon i { width: 36px; height: 36px; }
 
-    .login-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 0.75rem; color: var(--p-text); }
-    .login-header p { color: var(--p-muted); margin-bottom: 2.5rem; }
+    .login-icon i {
+        width: 36px;
+        height: 36px;
+    }
 
-    .login-form { text-align: left; }
-    .input-wrapper label { display: block; font-size: 0.85rem; font-weight: 800; color: var(--p-text); margin-bottom: 0.75rem; }
-    
+    .login-header h2 {
+        font-size: 2rem;
+        font-weight: 900;
+        margin-bottom: 0.75rem;
+        color: var(--p-text);
+    }
+
+    .login-header p {
+        color: var(--p-muted);
+        margin-bottom: 2.5rem;
+    }
+
+    .login-form {
+        text-align: left;
+    }
+
+    .input-wrapper label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--p-text);
+        margin-bottom: 0.75rem;
+    }
+
     .input-with-icon {
         position: relative;
         display: flex;
         align-items: center;
     }
-    .input-with-icon i { position: absolute; left: 1.25rem; color: var(--p-primary); width: 20px; height: 20px; }
+
+    .input-with-icon i {
+        position: absolute;
+        left: 1.25rem;
+        color: var(--p-primary);
+        width: 20px;
+        height: 20px;
+    }
+
     .input-with-icon input {
         width: 100%;
         padding: 1rem 1rem 1rem 3.5rem;
@@ -366,7 +723,12 @@
         transition: all 0.2s;
         outline: none;
     }
-    .input-with-icon input:focus { border-color: var(--p-primary); background: white; box-shadow: 0 0 0 4px var(--p-primary-light); }
+
+    .input-with-icon input:focus {
+        border-color: var(--p-primary);
+        background: white;
+        box-shadow: 0 0 0 4px var(--p-primary-light);
+    }
 
     .btn-unlock {
         width: 100%;
@@ -386,8 +748,13 @@
         transition: all 0.2s;
         box-shadow: 0 10px 20px -5px rgba(42, 157, 143, 0.4);
     }
-    .btn-unlock:hover { background: #21867a; transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(42, 157, 143, 0.5); }
-    
+
+    .btn-unlock:hover {
+        background: #21867a;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -5px rgba(42, 157, 143, 0.5);
+    }
+
     .error-msg {
         margin-top: 1.5rem;
         padding: 0.75rem;
@@ -402,14 +769,39 @@
         gap: 0.5rem;
     }
 
-    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--p-muted); }
-    .empty-state i { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5; }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--p-muted);
+    }
+
+    .empty-state i {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
 
     /* Utility text alignment */
-    .text-right { text-align: right; }
+    .text-right {
+        text-align: right;
+    }
 </style>
 
 <script>
+    function toggleDetails(id) {
+        const el = document.getElementById(id);
+        const icon = event.currentTarget.querySelector('i');
+
+        if (el.classList.contains('hidden')) {
+            el.classList.remove('hidden');
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            el.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+
     // Ensure icons are loaded correctly
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') {
@@ -418,5 +810,3 @@
     });
 </script>
 {% endblock %}
-
-

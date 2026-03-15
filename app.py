@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 import secrets
 import joblib
+import json
 import pandas as pd
 from typing import Any, cast
 
@@ -63,6 +64,21 @@ class Assessment(db.Model):
         self.age = age
         self.predictions_json = predictions_json
 
+    @property
+    def parsed_predictions(self):
+        if not self.predictions_json:
+            return {}
+        try:
+            # Try parsing as JSON
+            return json.loads(self.predictions_json)
+        except:
+            try:
+                # Fallback for old records stored with str()
+                import ast
+                return ast.literal_eval(self.predictions_json)
+            except:
+                return {}
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -71,7 +87,8 @@ class Assessment(db.Model):
             'date': self.date.isoformat(),
             'risk': self.risk_level,
             'confidence': self.confidence,
-            'score': self.score
+            'score': self.score,
+            'conditions': self.parsed_predictions
         }
 
 # Initialize the database
@@ -238,7 +255,7 @@ def result():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    admin_pass = os.environ.get('ADMIN_PASSWORD', 'MHP3')
+    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
     
     # Check if already authenticated via session or URL param
     is_authenticated = session.get('admin_authed') == True
@@ -294,7 +311,7 @@ def predict():
             score=result['score'],
             user_name=result['name'],
             age=int(str(result['age'])) if str(result['age']).isdigit() else None,
-            predictions_json=str(result['conditions'])
+            predictions_json=json.dumps(result['conditions'])
         )
         db.session.add(assessment)
         db.session.commit()
